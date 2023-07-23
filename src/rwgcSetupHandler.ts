@@ -91,10 +91,6 @@ function hasConflictingContentSetting(config: TailwindConfig) {
 
 export const handler = async ({ force }: { force: boolean }) => {
   const twConfigPath = path.join(getPaths().web.config, 'tailwind.config.js')
-  const componentsConfigPath = path.join(
-    getPaths().web.config,
-    'components.json'
-  )
 
   const tasks = new Listr(
     [
@@ -370,6 +366,10 @@ export const handler = async ({ force }: { force: boolean }) => {
            * Throw an error if it already exists
            */
 
+          const componentsConfigPath = path.join(
+            getPaths().web.config,
+            'components.json'
+          )
           if (!force && fs.existsSync(componentsConfigPath)) {
             throw new Error(
               'Components config already exists.\nUse --force to override existing config.'
@@ -382,6 +382,13 @@ export const handler = async ({ force }: { force: boolean }) => {
             'templates',
             'components.json.template'
           )
+
+          let componentsConfig = fs.readFileSync(componentsConfigTemplatePath, 'utf-8')
+
+          if (!isTypeScriptProject()) {
+            componentsConfig = componentsConfig.replace('"tsx": true', '"tsx": false')
+          }
+
           writeFile(
             componentsConfigPath,
             fs.readFileSync(componentsConfigTemplatePath, 'utf-8'),
