@@ -22,6 +22,11 @@ export const handler = async ({
   component: string
   force: boolean
 }) => {
+  // shadcn/ui uses kebab-case for component names
+  const componentName = component
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+
   const tasks = new Listr(
     [
       {
@@ -38,7 +43,7 @@ export const handler = async ({
               getPaths().web.components,
               '--yes',
               force && '--overwrite',
-              component,
+              componentName,
             ].filter(Boolean),
             process.env['RWJS_CWD']
               ? {
@@ -86,12 +91,12 @@ export const handler = async ({
           const componentPath = path.join(
             getPaths().web.components,
             'ui',
-            component + '.tsx'
+            componentName + '.tsx'
           )
           const pascalComponentPath = path.join(
             getPaths().web.components,
             'ui',
-            pascalcase(component) + '.tsx'
+            pascalcase(componentName) + '.tsx'
           )
 
           fs.renameSync(componentPath, pascalComponentPath)
