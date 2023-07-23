@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
+import execa from 'execa'
 import findup from 'findup-sync'
 import { hideBin, Parser } from 'yargs/helpers'
 import yargs from 'yargs'
@@ -43,6 +44,16 @@ try {
 }
 
 process.env['RWJS_CWD'] = cwd
+
+// Check yarn version using execa
+const { stdout } = execa.sync('yarn', ['--version'], { cwd })
+const majorVersion = parseInt(stdout.split('.')[0] || '0', 10)
+
+if (majorVersion < 3) {
+  throw new Error(
+    `You are using yarn ${stdout}. Please upgrade to yarn 3 or above`
+  )
+}
 
 yargs
   .scriptName(scriptName)
