@@ -11,6 +11,7 @@ interface CommandOptions extends BaseOptions {
 
 export const scriptName = 'rwgc'
 
+// TODO: Handle list (array) of components
 export const command = '$0 <component>'
 
 export const description = 'Generate a component'
