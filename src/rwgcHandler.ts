@@ -5,7 +5,7 @@ import execa from 'execa'
 import { Listr } from 'listr2'
 import pascalcase from 'pascalcase'
 
-import { colors, getPaths } from '@redwoodjs/cli-helpers'
+import { colors, getPaths, isTypeScriptProject } from '@redwoodjs/cli-helpers'
 
 interface ErrorWithExitCode extends Error {
   exitCode?: number
@@ -87,16 +87,16 @@ export const handler = async ({
         task: async () => {
           // TODO: Read from registry to rename all newly added files
 
-          // TODO: Support JS
+          const ext = isTypeScriptProject() ? '.tsx' : '.jsx'
           const componentPath = path.join(
             getPaths().web.components,
             'ui',
-            componentName + '.tsx'
+            componentName + ext
           )
           const pascalComponentPath = path.join(
             getPaths().web.components,
             'ui',
-            pascalcase(componentName) + '.tsx'
+            pascalcase(componentName) + ext
           )
 
           fs.renameSync(componentPath, pascalComponentPath)
