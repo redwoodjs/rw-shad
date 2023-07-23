@@ -8,9 +8,9 @@ interface ForceOptions extends BaseOptions {
   force: boolean
 }
 
-export const scriptName = "rw-setup-rwgc"
+export const scriptName = "setup-rwgc"
 
-export const description = 'Set up rwgc'
+export const description = 'Setup rwgc'
 
 export const builder = (yargs: Yargs.Argv<BaseOptions>) => {
   return yargs.option('force', {

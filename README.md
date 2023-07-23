@@ -1,7 +1,7 @@
 setup-rwgc
 ==========
 
-Command for setting up rwgc in a RedwoodJS project
+Command for setting up [rwgc](https://github.com/Tobbe/rwgc) in a RedwoodJS project
 
 Setup
 -----
@@ -10,7 +10,8 @@ Setup
 yarn dlx setup-rwgc
 ```
 
-Run the command above inside your Redwood project and it'll setup [shadcn/ui](https://ui.shadcn.com/) for you in a way that's tailor-made for Redwood.
+Run the command above inside your Redwood project and it'll setup [rwgc](https://github.com/Tobbe/rwgc) for you.
+You'll get a tailor-made setup of [shadcn/ui](https://ui.shadcn.com) for Redwood, with a RW specific cli to generate components.
 
 Usage
 -----
