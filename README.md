@@ -27,12 +27,12 @@ yarn rwgc button
 Note
 ----
 
-Currently this only works for TS projects. (Also see below 😉)
+Currently this doesn't work great if you've already installed custom Tailwind plugins. It won't know how to update your TW config. PRs are welcome 😉
 
 Contributing
 ------------
 
-If you want to add JS support, or contribute any other changes an easy way to test this locally is:
+If you want to improve TW config merging, or contribute any other changes an easy way to test this locally is:
 ```
 yarn start --cwd ../rw-example-project --force
 ```
