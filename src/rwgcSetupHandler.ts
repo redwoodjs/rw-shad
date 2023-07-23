@@ -404,7 +404,7 @@ export const handler = async ({ force }: { force: boolean }) => {
     console.log(colors.green('https://twitter.com/tobbedotdev'))
     console.log()
     console.log(
-      colors.info('Now try `yarn rwgc Button` to generate your first component')
+      colors.info('Now try `yarn rwgc button` to generate your first component')
     )
     console.log()
   } catch (e) {
