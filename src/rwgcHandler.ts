@@ -103,18 +103,6 @@ export const handler = async ({
 
   try {
     await tasks.run()
-
-    // TODO: Link to GH issues/PRs
-    console.log()
-    console.log(
-      colors.green('Send me a DM or @ me on Twitter with any feedback')
-    )
-    console.log(colors.green('https://twitter.com/tobbedotdev'))
-    console.log()
-    console.log(
-      colors.info('Now try `yarn rwgc Button` to generate your first component')
-    )
-    console.log()
   } catch (e) {
     if (e instanceof Error) {
       console.error(colors.error(e.message))
