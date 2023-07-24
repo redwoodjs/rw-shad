@@ -53,6 +53,7 @@ export const handler = async ({
               // The default ✓ indicator has bad accessibility
               return ` ${choice.enabled ? '●' : '○'}`
             },
+            // TODO: Read list from registry
             choices: [
               { message: 'Accordion', name: 'accordion' },
               { message: 'Alert', name: 'alert' },
