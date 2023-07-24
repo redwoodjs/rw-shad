@@ -21,6 +21,7 @@ export const builder = (yargs: Yargs.Argv<BaseOptions>) => {
     .positional('component', {
       description: 'The component you want to add',
       type: 'string',
+      default: '',
     })
     .option('force', {
       alias: 'f',
