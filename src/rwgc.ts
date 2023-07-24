@@ -1,32 +1,23 @@
 import type Yargs from 'yargs'
-
-interface BaseOptions {
-  cwd: string | undefined
-}
-
-interface CommandOptions extends BaseOptions {
-  component: string
-  force: boolean
-}
+import type { BaseOptions, CommandOptions } from './yargsTypes'
 
 export const scriptName = 'rwgc'
 
-// TODO: Handle list (array) of components
-export const command = '$0 <component>'
+export const command = '$0 [components..]'
 
-export const description = 'Generate a component'
+export const description = 'Generate one or more components'
 
 export const builder = (yargs: Yargs.Argv<BaseOptions>) => {
   return yargs
-    .positional('component', {
-      description: 'The component you want to add',
+    .positional('components', {
+      description: 'The components you want to add',
       type: 'string',
-      default: '',
+      array: true,
     })
     .option('force', {
       alias: 'f',
       default: false,
-      description: 'Overwrite existing component',
+      description: 'Overwrite existing components',
       type: 'boolean',
     })
 }

@@ -7,6 +7,8 @@ import pascalcase from 'pascalcase'
 
 import { colors, getPaths, isTypeScriptProject } from '@redwoodjs/cli-helpers'
 
+import type { CommandOptions } from './yargsTypes'
+
 interface ErrorWithExitCode extends Error {
   exitCode?: number
 }
@@ -16,21 +18,101 @@ function isErrorWithExitCode(e: unknown): e is ErrorWithExitCode {
 }
 
 export const handler = async ({
-  component,
+  components,
   force,
-}: {
-  component: string
-  force: boolean
-}) => {
+}: CommandOptions) => {
   // shadcn/ui uses kebab-case for component names
-  const componentName = component
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .toLowerCase()
+  let componentNames =
+    components?.map((component) =>
+      component.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+    ) ?? []
 
   const tasks = new Listr(
     [
       {
-        title: 'Adding component...',
+        title: 'Component selection...',
+        task: async (_ctx, task) => {
+          const components = await task.prompt({
+            type: 'multiselect',
+            message: `Select the components you want to add (Press ${colors.green(
+              '<space>'
+            )} to select)`,
+            footer: '\nEnter to confirm your choices and continue',
+            name: 'name',
+            required: true,
+            // For Vim users (related: https://github.com/enquirer/enquirer/pull/163)
+            j() {
+              // @ts-expect-error - `this` is not typed in enquirer
+              return this.down()
+            },
+            k() {
+              // @ts-expect-error - `this` is not typed in enquirer
+              return this.up()
+            },
+            indicator(_state: unknown, choice: any) {
+              // The default ✓ indicator has bad accessibility
+              return ` ${choice.enabled ? '●' : '○'}`
+            },
+            choices: [
+              { message: 'Accordion', name: 'accordion' },
+              { message: 'Alert', name: 'alert' },
+              { message: 'Alert Dialog', name: 'alert-dialog' },
+              { message: 'Aspect Ratio', name: 'aspect-ratio' },
+              { message: 'Avatar', name: 'avatar' },
+              { message: 'Badge', name: 'badge' },
+              { message: 'Button', name: 'button' },
+              { message: 'Calendar', name: 'calendar' },
+              { message: 'Card', name: 'card' },
+              { message: 'Checkbox', name: 'checkbox' },
+              { message: 'Collapsible', name: 'collapsible' },
+              { message: 'Combobox', name: 'combobox' },
+              { message: 'Command', name: 'command' },
+              { message: 'Context Menu', name: 'context-menu' },
+              { message: 'Data Table', name: 'data-table' },
+              { message: 'Date Picker', name: 'date-picker' },
+              { message: 'Dialog', name: 'dialog' },
+              { message: 'Dropdown Menu', name: 'dropdown-menu' },
+              { message: 'Form', name: 'form' },
+              { message: 'Hover Card', name: 'hover-card' },
+              { message: 'Input', name: 'input' },
+              { message: 'Label', name: 'label' },
+              { message: 'Menubar', name: 'menubar' },
+              { message: 'Navigation Menu', name: 'navigation-menu' },
+              { message: 'Popover', name: 'popover' },
+              { message: 'Progress', name: 'progress' },
+              { message: 'Radio Group', name: 'radio-group' },
+              { message: 'Scroll Area', name: 'scroll-area' },
+              { message: 'Select', name: 'select' },
+              { message: 'Separator', name: 'separator' },
+              { message: 'Sheet', name: 'sheet' },
+              { message: 'Skeleton', name: 'skeleton' },
+              { message: 'Slider', name: 'slider' },
+              { message: 'Switch', name: 'switch' },
+              { message: 'Table', name: 'table' },
+              { message: 'Tabs', name: 'tabs' },
+              { message: 'Textarea', name: 'textarea' },
+              { message: 'Toast', name: 'toast' },
+              { message: 'Toggle', name: 'toggle' },
+              { message: 'Tooltip', name: 'tooltip' },
+            ],
+
+            validate: (value) => {
+              if (value.length < 1) {
+                return 'You must choose at least one component.'
+              }
+
+              return true
+            },
+          })
+
+          componentNames = components
+        },
+        enabled: () => {
+          return componentNames.length === 0
+        },
+      },
+      {
+        title: 'Adding component(s)...',
         task: async () => {
           await execa(
             'npx',
@@ -43,7 +125,7 @@ export const handler = async ({
               getPaths().web.components,
               '--yes',
               force && '--overwrite',
-              componentName,
+              ...componentNames,
             ].filter(Boolean),
             process.env['RWJS_CWD']
               ? {
@@ -62,7 +144,7 @@ export const handler = async ({
         },
       },
       {
-        title: 'Formatting source...',
+        title: 'Formatting source(s)...',
         task: () => {
           // TODO: Read from registry to only lint newly added files
 
@@ -88,18 +170,21 @@ export const handler = async ({
           // TODO: Read from registry to rename all newly added files
 
           const ext = isTypeScriptProject() ? '.tsx' : '.jsx'
-          const componentPath = path.join(
-            getPaths().web.components,
-            'ui',
-            componentName + ext
-          )
-          const pascalComponentPath = path.join(
-            getPaths().web.components,
-            'ui',
-            pascalcase(componentName) + ext
-          )
 
-          fs.renameSync(componentPath, pascalComponentPath)
+          componentNames?.forEach((componentName) => {
+            const componentPath = path.join(
+              getPaths().web.components,
+              'ui',
+              componentName + ext
+            )
+            const pascalComponentPath = path.join(
+              getPaths().web.components,
+              'ui',
+              pascalcase(componentName) + ext
+            )
+
+            fs.renameSync(componentPath, pascalComponentPath)
+          })
         },
       },
     ],
