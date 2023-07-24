@@ -22,7 +22,7 @@ function isErrorWithExitCode(e: unknown): e is ErrorWithExitCode {
 }
 
 const defaultTailwindConfig: TailwindConfig = {
-  content: ['src/**/*.{ts,tsx}'],
+  content: ['src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {},
   },
@@ -171,18 +171,9 @@ export const handler = async ({ force }: { force: boolean }) => {
           twConfig.darkMode = 'class'
 
           if (!Array.isArray(twConfig.content)) {
-            if (isTypeScriptProject()) {
-              twConfig.content = ['src/**/*.{ts,tsx}']
-            } else {
-              twConfig.content = ['src/**/*.{js,jsx}']
-            }
+            twConfig.content = ['src/**/*.{js,jsx,ts,tsx}']
           } else {
-            if (isTypeScriptProject()) {
-              twConfig.content.push('src/**/*.{ts,tsx}')
-            } else {
-              twConfig.content.push('src/**/*.{js,jsx}')
-            }
-
+            twConfig.content.push('src/**/*.{js,jsx,ts,tsx}')
             twConfig.content = Array.from(new Set(twConfig.content))
           }
 
@@ -383,10 +374,16 @@ export const handler = async ({ force }: { force: boolean }) => {
             'components.json.template'
           )
 
-          let componentsConfig = fs.readFileSync(componentsConfigTemplatePath, 'utf-8')
+          let componentsConfig = fs.readFileSync(
+            componentsConfigTemplatePath,
+            'utf-8'
+          )
 
           if (!isTypeScriptProject()) {
-            componentsConfig = componentsConfig.replace('"tsx": true', '"tsx": false')
+            componentsConfig = componentsConfig.replace(
+              '"tsx": true',
+              '"tsx": false'
+            )
           }
 
           writeFile(
