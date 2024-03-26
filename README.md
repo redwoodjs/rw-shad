@@ -13,7 +13,7 @@ yarn rwgc <component>
 Details
 -------
 
-Under the hood this will run `npx shadcn-ui@latest add --cwd ./config --path components/ --yes <component>`
+Under the hood this will run `npx shadcn-ui@latest add --cwd ./config --path components/ui --yes <component>`
 
 Contributing
 ------------

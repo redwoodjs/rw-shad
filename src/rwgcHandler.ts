@@ -123,7 +123,7 @@ export const handler = async ({
               '--cwd',
               getPaths().web.config,
               '--path',
-              getPaths().web.components,
+              path.join(getPaths().web.components, 'ui'),
               '--yes',
               force && '--overwrite',
               ...componentNames,
