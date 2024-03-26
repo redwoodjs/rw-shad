@@ -9,7 +9,7 @@ import { scriptName, command, description, builder, handler } from './rwgc'
 
 // @ts-ignore
 let { cwd, help } = Parser(hideBin(process.argv))
-cwd ??= process.env['RWJS_CWD']
+cwd = path.resolve(cwd ?? process.env['RSJW_CWD'])
 
 try {
   if (cwd) {
