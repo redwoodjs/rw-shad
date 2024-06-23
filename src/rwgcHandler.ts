@@ -18,14 +18,11 @@ function isErrorWithExitCode(e: unknown): e is ErrorWithExitCode {
   return typeof (e as ErrorWithExitCode)?.exitCode !== 'undefined'
 }
 
-export const handler = async ({
-  components,
-  force,
-}: CommandOptions) => {
+export const handler = async ({ components, force }: CommandOptions) => {
   // shadcn/ui uses kebab-case for component names
   let componentNames =
     components?.map((component) =>
-      component.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+      component.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),
     ) ?? []
 
   const tasks = new Listr(
@@ -36,7 +33,7 @@ export const handler = async ({
           const components = await task.prompt({
             type: 'multiselect',
             message: `Select the components you want to add (Press ${colors.green(
-              '<space>'
+              '<space>',
             )} to select)`,
             footer: '\nEnter to confirm your choices and continue',
             name: 'name',
@@ -131,11 +128,11 @@ export const handler = async ({
               ? {
                   cwd: process.env['RWJS_CWD'],
                 }
-              : {}
+              : {},
           ).catch((error) => {
             if (error.stdout.includes('--overwrite')) {
               throw new Error(
-                'Component already exists. Use --force to overwrite'
+                'Component already exists. Use --force to overwrite',
               )
             } else {
               throw error
@@ -156,7 +153,7 @@ export const handler = async ({
                 ? {
                     cwd: process.env['RWJS_CWD'],
                   }
-                : {}
+                : {},
             )
           } catch {
             // Ignore errors here. The user will have to fix those manually for now
@@ -175,12 +172,12 @@ export const handler = async ({
             const componentPath = path.join(
               getPaths().web.components,
               'ui',
-              componentName + ext
+              componentName + ext,
             )
             const pascalComponentPath = path.join(
               getPaths().web.components,
               'ui',
-              pascalcase(componentName) + ext
+              pascalcase(componentName) + ext,
             )
 
             fs.renameSync(componentPath, pascalComponentPath)
@@ -188,7 +185,7 @@ export const handler = async ({
         },
       },
     ],
-    { rendererOptions: { collapse: false } }
+    { rendererOptions: { collapse: false } },
   )
 
   try {
