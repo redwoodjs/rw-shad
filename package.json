@@ -46,7 +46,7 @@
     "enquirer": "2.4.1",
     "execa": "5.1.1",
     "findup-sync": "5.0.0",
-    "listr2": "5.0.7",
+    "listr2": "8.2.3",
     "pascalcase": "1.0.0",
     "yargs": "17.7.1"
   },
