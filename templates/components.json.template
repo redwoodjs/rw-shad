@@ -11,6 +11,7 @@
   },
   "aliases": {
     "components": "src/components",
+    "ui": "src/components/ui",
     "utils": "src/utils/cn"
   }
 }
