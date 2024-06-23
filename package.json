@@ -32,6 +32,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/findup-sync": "^4.0.2",
+    "@types/node": "^20.14.8",
     "@types/pascalcase": "^1.0.1",
     "@types/prettier": "^2.7.3",
     "@types/yargs": "^17.0.22",
