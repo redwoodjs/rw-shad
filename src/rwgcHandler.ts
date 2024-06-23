@@ -130,11 +130,9 @@ export const handler = async ({ components, force }: CommandOptions) => {
             'shadcn-ui@latest',
             'add',
             '--cwd',
-            // TODO: See if we can just use web.base instead
+            // Need to set --cwd to the config dir for shadcn to find the
+            // config file
             getPaths().web.config,
-            // TODO: See if this is even needed
-            '--path',
-            path.join(getPaths().web.components, 'ui'),
             '--yes',
             force && '--overwrite',
             ...componentNames,
