@@ -45,5 +45,6 @@
     "json-stable-stringify": "^1.0.2",
     "listr2": "5.0.7",
     "yargs": "17.7.1"
-  }
+  },
+  "packageManager": "yarn@4.3.1"
 }
