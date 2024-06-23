@@ -1,5 +1,5 @@
-import type Yargs from 'yargs'
-import type { BaseOptions, CommandOptions } from './yargsTypes'
+import type { Argv } from 'yargs'
+import type { BaseOptions, CommandOptions } from './yargsTypes.js'
 
 export const scriptName = 'rwgc'
 
@@ -7,7 +7,7 @@ export const command = '$0 [components..]'
 
 export const description = 'Generate one or more components'
 
-export const builder = (yargs: Yargs.Argv<BaseOptions>) => {
+export const builder = (yargs: Argv<BaseOptions>) => {
   return yargs
     .positional('components', {
       description: 'The components you want to add',
@@ -23,6 +23,6 @@ export const builder = (yargs: Yargs.Argv<BaseOptions>) => {
 }
 
 export const handler = async (options: CommandOptions) => {
-  const { handler } = await import('./rwgcHandler')
+  const { handler } = await import('./rwgcHandler.js')
   return handler(options)
 }

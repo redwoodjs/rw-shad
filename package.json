@@ -6,6 +6,7 @@
     "type": "git",
     "url": "https://github.com/Tobbe/rwgc"
   },
+  "type": "module",
   "main": "./dist/cli.js",
   "bin": "./dist/cli.js",
   "scripts": {
@@ -37,7 +38,8 @@
     "@types/yargs": "^17.0.22",
     "pkgroll": "^1.9.0",
     "prettier": "^3.3.2",
-    "tsx": "^3.12.3"
+    "tsx": "^3.12.3",
+    "typescript": "^5.5.2"
   },
   "dependencies": {
     "@redwoodjs/cli-helpers": "^5.0.0",

@@ -3,9 +3,9 @@ import path from 'path'
 
 import findup from 'findup-sync'
 import { hideBin, Parser } from 'yargs/helpers'
-import yargs from 'yargs'
+import yargs from 'yargs/yargs'
 
-import { scriptName, command, description, builder, handler } from './rwgc'
+import { scriptName, command, description, builder, handler } from './rwgc.js'
 
 // @ts-ignore
 let { cwd, help } = Parser(hideBin(process.argv))
@@ -26,7 +26,7 @@ try {
 
     if (!redwoodTOMLPath && !help) {
       throw new Error(
-        `Couldn't find up a "redwood.toml" file from ${process.cwd()}`
+        `Couldn't find up a "redwood.toml" file from ${process.cwd()}`,
       )
     }
 
@@ -44,7 +44,7 @@ try {
 
 process.env['RWJS_CWD'] = cwd
 
-yargs
+yargs()
   .scriptName(scriptName)
   .option('cwd', {
     type: 'string',

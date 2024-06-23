@@ -5,9 +5,10 @@ import execa from 'execa'
 import { Listr } from 'listr2'
 import pascalcase from 'pascalcase'
 
-import { colors, getPaths, isTypeScriptProject } from '@redwoodjs/cli-helpers'
+import * as cliHelpers from '@redwoodjs/cli-helpers'
+const { colors, getPaths, isTypeScriptProject } = cliHelpers.default
 
-import type { CommandOptions } from './yargsTypes'
+import type { CommandOptions } from './yargsTypes.js'
 
 interface ErrorWithExitCode extends Error {
   exitCode?: number
@@ -42,11 +43,9 @@ export const handler = async ({
             required: true,
             // For Vim users (related: https://github.com/enquirer/enquirer/pull/163)
             j() {
-              // @ts-expect-error - `this` is not typed in enquirer
               return this.down()
             },
             k() {
-              // @ts-expect-error - `this` is not typed in enquirer
               return this.up()
             },
             indicator(_state: unknown, choice: any) {
