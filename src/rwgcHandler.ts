@@ -10,6 +10,8 @@ const { colors, getPaths, isTypeScriptProject } = cliHelpers.default
 
 import type { CommandOptions } from './yargsTypes.js'
 
+type Writeable<T> = { -readonly [P in keyof T]: T[P] }
+
 interface ErrorWithExitCode extends Error {
   exitCode?: number
 }
@@ -124,29 +126,29 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Adding component(s)...',
         task: async (ctx) => {
-          await execa(
-            'npx',
-            [
-              'shadcn-ui@latest',
-              'add',
-              '--cwd',
-              getPaths().web.config,
-              '--path',
-              path.join(getPaths().web.components, 'ui'),
-              '--yes',
-              force && '--overwrite',
-              ...componentNames,
-            ].filter(Boolean),
-            process.env['RWJS_CWD']
-              ? {
-                  cwd: process.env['RWJS_CWD'],
-                }
-              : {},
-          ).catch((error) => {
+          const args = [
+            'shadcn-ui@latest',
+            'add',
+            '--cwd',
+            // TODO: See if we can just use web.base instead
+            getPaths().web.config,
+            // TODO: See if this is even needed
+            '--path',
+            path.join(getPaths().web.components, 'ui'),
+            '--yes',
+            force && '--overwrite',
+            ...componentNames,
+          ].filter(Boolean)
+
+          const options: Writeable<execa.Options> = {}
+          if (process.env['RWJS_CWD']) {
+            options.cwd = process.env['RWJS_CWD']
+          }
+
+          await execa('npx', args, options).catch((error) => {
             if (error.stdout.includes('--overwrite')) {
-              throw new Error(
-                'Component already exists. Use --force to overwrite',
-              )
+              const msg = 'Component already exists. Use --force to overwrite'
+              throw new Error(msg)
             } else {
               throw error
             }
@@ -195,13 +197,19 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Renaming file(s)...',
         task: (ctx) => {
-          const ext = isTypeScriptProject() ? '.tsx' : '.jsx'
-
           ctx.newComponents.forEach((component) => {
             component.files.forEach((fileName) => {
+              const ext = isTypeScriptProject()
+                ? fileName.endsWith('.tsx')
+                  ? '.tsx'
+                  : '.ts'
+                : fileName.endsWith('jsx')
+                  ? '.jsx'
+                  : '.js'
+
               const componentPath = path.join(
                 getPaths().web.components,
-                fileName.replace('.tsx', ext),
+                fileName.replace(/.tsx?/, ext),
               )
               const pascalComponentPath = path.join(
                 getPaths().web.components,
@@ -216,30 +224,47 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Updating import(s)...',
         task: (ctx) => {
-          const ext = isTypeScriptProject() ? '.tsx' : '.jsx'
-
           ctx.newComponents.forEach((component) => {
             component.files.forEach((fileName) => {
+              const ext = isTypeScriptProject()
+                ? fileName.endsWith('.tsx')
+                  ? '.tsx'
+                  : '.ts'
+                : fileName.endsWith('jsx')
+                  ? '.jsx'
+                  : '.js'
+
               const pascalComponentPath = path.join(
                 getPaths().web.components,
                 fileNameToPascalCase(fileName, ext),
               )
 
-              const importPath =
-                'src/components/' + fileName.replace('.tsx', '')
-              const importPascalPath =
-                'src/components/' + fileNameToPascalCase(fileName, '')
+              let src = fs.readFileSync(pascalComponentPath, 'utf-8')
 
-              const src = fs.readFileSync(pascalComponentPath, 'utf-8')
+              ctx.newComponents.forEach((component) => {
+                component.files.forEach((fileName) => {
+                  const importPath =
+                    'src/components/' + fileName.replace(/.tsx?/, '')
+                  const importPascalPath =
+                    'src/components/' + fileNameToPascalCase(fileName, '')
 
-              // Using replaceAll to (maybe - untested) also handle separate
-              // type imports if there are any
-              const newSrc = src.replaceAll(
-                new RegExp(`import(.*)from ['"]${importPath}['"]`, 'g'),
-                `import\\1from '${importPascalPath}'`,
-              )
+                  const regExStr = `^import (.+) from '${importPath}'$`
+                  const regExStrMultiline = `^} from '${importPath}'$`
 
-              fs.writeFileSync(pascalComponentPath, newSrc)
+                  // Using replaceAll to also handle separate type imports
+                  src = src
+                    .replaceAll(
+                      new RegExp(regExStr, 'gm'),
+                      `import $1 from '${importPascalPath}'`,
+                    )
+                    .replaceAll(
+                      new RegExp(regExStrMultiline, 'gm'),
+                      `} from '${importPascalPath}'`,
+                    )
+                })
+              })
+
+              fs.writeFileSync(pascalComponentPath, src)
             })
           })
         },
@@ -274,8 +299,8 @@ function titleCase(str: string) {
 
 function fileNameToPascalCase(fileName: string, ext: string) {
   const parts = fileName.split('/')
-  const componentFileName = parts.at(-1)?.replace('.tsx', '')
-  return parts.slice(0, -1).join('/') + pascalcase(componentFileName) + ext
+  const componentFileName = parts.at(-1)?.replace(/.tsx?/, '')
+  return path.join(...parts.slice(0, -1), pascalcase(componentFileName) + ext)
 }
 
 function getCachedRegistryPath() {
