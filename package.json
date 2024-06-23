@@ -50,5 +50,5 @@
     "pascalcase": "1.0.0",
     "yargs": "17.7.1"
   },
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.3.1"
 }
