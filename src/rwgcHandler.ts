@@ -18,6 +18,18 @@ function isErrorWithExitCode(e: unknown): e is ErrorWithExitCode {
   return typeof (e as ErrorWithExitCode)?.exitCode !== 'undefined'
 }
 
+interface Component {
+  name: string
+  dependencies?: string[] | undefined
+  registryDependencies?: string[] | undefined
+  files: string[]
+  type: string
+}
+
+type Registry = Array<Component>
+
+let registry: Registry = []
+
 export const handler = async ({ components, force }: CommandOptions) => {
   // shadcn/ui uses kebab-case for component names
   let componentNames =
@@ -27,6 +39,43 @@ export const handler = async ({ components, force }: CommandOptions) => {
 
   const tasks = new Listr(
     [
+      {
+        title: 'Fetching registry...',
+        task: async () => {
+          const cachedRegistryPath = path.join(
+            getPaths().generated.base,
+            'shadcn',
+            'registry.json',
+          )
+
+          if (fs.existsSync(cachedRegistryPath)) {
+            const cachedRegistry = JSON.parse(
+              fs.readFileSync(cachedRegistryPath, 'utf8'),
+            )
+            registry = cachedRegistry
+          } else {
+            const res = await fetch('https://ui.shadcn.com/registry/index.json')
+            const json: any = await res.json()
+            // Just a basic sanity check here
+            if (
+              Array.isArray(json) &&
+              json.length > 10 &&
+              json.every((component) => typeof component.name === 'string')
+            ) {
+              fs.writeFileSync(
+                cachedRegistryPath,
+                JSON.stringify(json, null, 2),
+              )
+              registry = json
+            } else {
+              throw new Error(
+                'Invalid registry response:' +
+                  JSON.stringify(json, undefined, 2),
+              )
+            }
+          }
+        },
+      },
       {
         title: 'Component selection...',
         task: async (_ctx, task) => {
@@ -49,49 +98,10 @@ export const handler = async ({ components, force }: CommandOptions) => {
               // The default ✓ indicator has bad accessibility
               return ` ${choice.enabled ? '●' : '○'}`
             },
-            // TODO: Read list from registry
-            choices: [
-              { message: 'Accordion', name: 'accordion' },
-              { message: 'Alert', name: 'alert' },
-              { message: 'Alert Dialog', name: 'alert-dialog' },
-              { message: 'Aspect Ratio', name: 'aspect-ratio' },
-              { message: 'Avatar', name: 'avatar' },
-              { message: 'Badge', name: 'badge' },
-              { message: 'Button', name: 'button' },
-              { message: 'Calendar', name: 'calendar' },
-              { message: 'Card', name: 'card' },
-              { message: 'Checkbox', name: 'checkbox' },
-              { message: 'Collapsible', name: 'collapsible' },
-              { message: 'Combobox', name: 'combobox' },
-              { message: 'Command', name: 'command' },
-              { message: 'Context Menu', name: 'context-menu' },
-              { message: 'Data Table', name: 'data-table' },
-              { message: 'Date Picker', name: 'date-picker' },
-              { message: 'Dialog', name: 'dialog' },
-              { message: 'Dropdown Menu', name: 'dropdown-menu' },
-              { message: 'Form', name: 'form' },
-              { message: 'Hover Card', name: 'hover-card' },
-              { message: 'Input', name: 'input' },
-              { message: 'Label', name: 'label' },
-              { message: 'Menubar', name: 'menubar' },
-              { message: 'Navigation Menu', name: 'navigation-menu' },
-              { message: 'Popover', name: 'popover' },
-              { message: 'Progress', name: 'progress' },
-              { message: 'Radio Group', name: 'radio-group' },
-              { message: 'Scroll Area', name: 'scroll-area' },
-              { message: 'Select', name: 'select' },
-              { message: 'Separator', name: 'separator' },
-              { message: 'Sheet', name: 'sheet' },
-              { message: 'Skeleton', name: 'skeleton' },
-              { message: 'Slider', name: 'slider' },
-              { message: 'Switch', name: 'switch' },
-              { message: 'Table', name: 'table' },
-              { message: 'Tabs', name: 'tabs' },
-              { message: 'Textarea', name: 'textarea' },
-              { message: 'Toast', name: 'toast' },
-              { message: 'Toggle', name: 'toggle' },
-              { message: 'Tooltip', name: 'tooltip' },
-            ],
+            choices: registry.map((component) => ({
+              message: titleCase(component.name),
+              name: component.name,
+            })),
 
             validate: (value) => {
               if (value.length < 1) {
@@ -163,7 +173,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
       },
       {
         title: 'Renaming file(s)...',
-        task: async () => {
+        task: () => {
           // TODO: Read from registry to rename all newly added files
 
           const ext = isTypeScriptProject() ? '.tsx' : '.jsx'
@@ -203,4 +213,11 @@ export const handler = async ({ components, force }: CommandOptions) => {
 
     process.exit(1)
   }
+}
+
+function titleCase(str: string) {
+  return str
+    .split('-')
+    .map((word) => word[0]?.toUpperCase() + word.slice(1))
+    .join(' ')
 }
