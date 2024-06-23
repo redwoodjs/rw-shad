@@ -31,19 +31,19 @@
   "author": "Tobbe Lundberg",
   "license": "MIT",
   "devDependencies": {
-    "@types/findup-sync": "^4.0.2",
-    "@types/json-stable-stringify": "^1.0.34",
-    "@types/yargs": "^17.0.22",
-    "pkgroll": "^1.9.0",
+    "@types/findup-sync": "4.0.2",
+    "@types/json-stable-stringify": "1.0.34",
+    "@types/yargs": "17.0.22",
+    "pkgroll": "1.9.0",
     "prettier": "3.3.2",
-    "tailwindcss": "^3.3.3",
-    "tsx": "^4.15.7"
+    "tailwindcss": "3.3.3",
+    "tsx": "4.15.7"
   },
   "dependencies": {
-    "@redwoodjs/cli-helpers": "^5.0.0",
+    "@redwoodjs/cli-helpers": "5.4.3",
     "execa": "5.1.1",
     "findup-sync": "5.0.0",
-    "json-stable-stringify": "^1.0.2",
+    "json-stable-stringify": "1.0.2",
     "listr2": "5.0.7",
     "yargs": "17.7.1"
   },

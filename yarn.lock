@@ -907,7 +907,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@redwoodjs/cli-helpers@npm:^5.0.0":
+"@redwoodjs/cli-helpers@npm:5.4.3":
   version: 5.4.3
   resolution: "@redwoodjs/cli-helpers@npm:5.4.3"
   dependencies:
@@ -1146,7 +1146,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/findup-sync@npm:^4.0.2":
+"@types/findup-sync@npm:4.0.2":
   version: 4.0.2
   resolution: "@types/findup-sync@npm:4.0.2"
   dependencies:
@@ -1155,7 +1155,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/json-stable-stringify@npm:^1.0.34":
+"@types/json-stable-stringify@npm:1.0.34":
   version: 1.0.34
   resolution: "@types/json-stable-stringify@npm:1.0.34"
   checksum: 10c0/b24c7953a314426011c2304f909278734504f5c77354c16ea3bbbc55cbba5f5e02ce026a2345dbfcd8a78f33a34693840441c12a31c653131a7010a568adc56c
@@ -1220,7 +1220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yargs@npm:^17.0.22":
+"@types/yargs@npm:17.0.22":
   version: 17.0.22
   resolution: "@types/yargs@npm:17.0.22"
   dependencies:
@@ -3127,7 +3127,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-stable-stringify@npm:^1.0.2":
+"json-stable-stringify@npm:1.0.2":
   version: 1.0.2
   resolution: "json-stable-stringify@npm:1.0.2"
   dependencies:
@@ -3999,7 +3999,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pkgroll@npm:^1.9.0":
+"pkgroll@npm:1.9.0":
   version: 1.9.0
   resolution: "pkgroll@npm:1.9.0"
   dependencies:
@@ -4514,18 +4514,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "setup-rwgc@workspace:."
   dependencies:
-    "@redwoodjs/cli-helpers": "npm:^5.0.0"
-    "@types/findup-sync": "npm:^4.0.2"
-    "@types/json-stable-stringify": "npm:^1.0.34"
-    "@types/yargs": "npm:^17.0.22"
+    "@redwoodjs/cli-helpers": "npm:5.4.3"
+    "@types/findup-sync": "npm:4.0.2"
+    "@types/json-stable-stringify": "npm:1.0.34"
+    "@types/yargs": "npm:17.0.22"
     execa: "npm:5.1.1"
     findup-sync: "npm:5.0.0"
-    json-stable-stringify: "npm:^1.0.2"
+    json-stable-stringify: "npm:1.0.2"
     listr2: "npm:5.0.7"
-    pkgroll: "npm:^1.9.0"
+    pkgroll: "npm:1.9.0"
     prettier: "npm:3.3.2"
-    tailwindcss: "npm:^3.3.3"
-    tsx: "npm:^4.15.7"
+    tailwindcss: "npm:3.3.3"
+    tsx: "npm:4.15.7"
     yargs: "npm:17.7.1"
   bin:
     setup-rwgc: ./dist/cli.js
@@ -4851,7 +4851,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwindcss@npm:^3.3.3":
+"tailwindcss@npm:3.3.3":
   version: 3.3.3
   resolution: "tailwindcss@npm:3.3.3"
   dependencies:
@@ -5056,7 +5056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.15.7":
+"tsx@npm:4.15.7":
   version: 4.15.7
   resolution: "tsx@npm:4.15.7"
   dependencies:
