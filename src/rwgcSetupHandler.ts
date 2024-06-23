@@ -130,13 +130,6 @@ export const handler = async ({ force }: { force: boolean }) => {
       {
         title: 'Update tailwind config...',
         task: async (_ctx, task) => {
-          /**
-           * Update api/server.config.js
-           *  - Add the ws plugin
-           *  - Add /ws websocket route handler
-           * If existing config is detected an error will be thrown
-           */
-
           const tailwindConfig = await import(twConfigPath)
 
           if (!force && !tailwindConfig?.default) {
