@@ -7,9 +7,7 @@
     "url": "https://github.com/Tobbe/setup-rwgc"
   },
   "main": "./dist/cli.js",
-  "bin": {
-    "setup-rwgc": "./dist/cli.js"
-  },
+  "bin": "./dist/cli.js",
   "scripts": {
     "start": "tsx src/cli",
     "build": "rm -fr ./dist && pkgroll",
