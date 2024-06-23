@@ -120,7 +120,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
       },
       {
         title: 'Adding component(s)...',
-        task: async () => {
+        task: async (ctx) => {
           await execa(
             'npx',
             [
@@ -148,12 +148,30 @@ export const handler = async ({ components, force }: CommandOptions) => {
               throw error
             }
           })
+
+          const newComponents = new Map<string, Component>()
+
+          componentNames.forEach((componentName) => {
+            const component = registry.find((c) => c.name === componentName)
+
+            if (component) {
+              newComponents.set(componentName, component)
+              component.registryDependencies?.forEach((depName) => {
+                const dep = registry.find((c) => c.name === depName)
+                if (dep) {
+                  newComponents.set(depName, dep)
+                }
+              })
+            }
+          })
+
+          ctx.newComponents = newComponents
         },
       },
       {
         title: 'Formatting source(s)...',
         task: () => {
-          // TODO: Read from registry to only lint newly added files
+          // TODO: use ctx.newComponents to only lint newly added files
 
           try {
             execa.commandSync(
@@ -173,24 +191,53 @@ export const handler = async ({ components, force }: CommandOptions) => {
       },
       {
         title: 'Renaming file(s)...',
-        task: () => {
-          // TODO: Read from registry to rename all newly added files
-
+        task: (ctx) => {
           const ext = isTypeScriptProject() ? '.tsx' : '.jsx'
 
-          componentNames?.forEach((componentName) => {
-            const componentPath = path.join(
-              getPaths().web.components,
-              'ui',
-              componentName + ext,
-            )
-            const pascalComponentPath = path.join(
-              getPaths().web.components,
-              'ui',
-              pascalcase(componentName) + ext,
-            )
+          ctx.newComponents.forEach((component) => {
+            component.files.forEach((fileName) => {
+              const componentPath = path.join(
+                getPaths().web.components,
+                fileName.replace('.tsx', ext),
+              )
+              const pascalComponentPath = path.join(
+                getPaths().web.components,
+                fileNameToPascalCase(fileName, ext),
+              )
 
-            fs.renameSync(componentPath, pascalComponentPath)
+              fs.renameSync(componentPath, pascalComponentPath)
+            })
+          })
+        },
+      },
+      {
+        title: 'Updating import(s)...',
+        task: (ctx) => {
+          const ext = isTypeScriptProject() ? '.tsx' : '.jsx'
+
+          ctx.newComponents.forEach((component) => {
+            component.files.forEach((fileName) => {
+              const pascalComponentPath = path.join(
+                getPaths().web.components,
+                fileNameToPascalCase(fileName, ext),
+              )
+
+              const importPath =
+                'src/components/' + fileName.replace('.tsx', '')
+              const importPascalPath =
+                'src/components/' + fileNameToPascalCase(fileName, '')
+
+              const src = fs.readFileSync(pascalComponentPath, 'utf-8')
+
+              // Using replaceAll to (maybe - untested) also handle separate
+              // type imports if there are any
+              const newSrc = src.replaceAll(
+                new RegExp(`import(.*)from ['"]${importPath}['"]`, 'g'),
+                `import\\1from '${importPascalPath}'`,
+              )
+
+              fs.writeFileSync(pascalComponentPath, newSrc)
+            })
           })
         },
       },
@@ -220,4 +267,10 @@ function titleCase(str: string) {
     .split('-')
     .map((word) => word[0]?.toUpperCase() + word.slice(1))
     .join(' ')
+}
+
+function fileNameToPascalCase(fileName: string, ext: string) {
+  const parts = fileName.split('/')
+  const componentFileName = parts.at(-1)?.replace('.tsx', '')
+  return parts.slice(0, -1).join('/') + pascalcase(componentFileName) + ext
 }
