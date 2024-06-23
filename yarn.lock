@@ -1932,6 +1932,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"enquirer@npm:2.4.1":
+  version: 2.4.1
+  resolution: "enquirer@npm:2.4.1"
+  dependencies:
+    ansi-colors: "npm:^4.1.1"
+    strip-ansi: "npm:^6.0.1"
+  checksum: 10c0/43850479d7a51d36a9c924b518dcdc6373b5a8ae3401097d336b7b7e258324749d0ad37a1fcaa5706f04799baa05585cd7af19ebdf7667673e7694435fcea918
+  languageName: node
+  linkType: hard
+
 "env-paths@npm:2.2.1, env-paths@npm:^2.2.0":
   version: 2.2.1
   resolution: "env-paths@npm:2.2.1"
@@ -4126,7 +4136,7 @@ __metadata:
     "@types/node": "npm:20.14.8"
     "@types/pascalcase": "npm:1.0.1"
     "@types/yargs": "npm:17.0.22"
-    enquirer: "npm:2.3.6"
+    enquirer: "npm:2.4.1"
     execa: "npm:5.1.1"
     findup-sync: "npm:5.0.0"
     listr2: "npm:5.0.7"
