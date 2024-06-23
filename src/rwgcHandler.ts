@@ -42,18 +42,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Fetching registry...',
         task: async () => {
-          const cachedRegistryPath = path.join(
-            getPaths().generated.base,
-            'shadcn',
-            'registry.json',
-          )
-
-          if (fs.existsSync(cachedRegistryPath)) {
-            const cachedRegistry = JSON.parse(
-              fs.readFileSync(cachedRegistryPath, 'utf8'),
-            )
-            registry = cachedRegistry
-          } else {
+          if (shouldUpdateRegistryCache()) {
             const res = await fetch('https://ui.shadcn.com/registry/index.json')
             const json: any = await res.json()
             // Just a basic sanity check here
@@ -62,17 +51,31 @@ export const handler = async ({ components, force }: CommandOptions) => {
               json.length > 10 &&
               json.every((component) => typeof component.name === 'string')
             ) {
+              registry = json
+
               fs.writeFileSync(
-                cachedRegistryPath,
+                getCachedRegistryPath(),
                 JSON.stringify(json, null, 2),
               )
-              registry = json
+              fs.writeFileSync(
+                getCacheMetadataPath(),
+                JSON.stringify(
+                  { timestamp: new Date().toISOString() },
+                  null,
+                  2,
+                ),
+              )
             } else {
               throw new Error(
                 'Invalid registry response:' +
                   JSON.stringify(json, undefined, 2),
               )
             }
+          } else {
+            const cachedRegistry = JSON.parse(
+              fs.readFileSync(getCachedRegistryPath(), 'utf8'),
+            )
+            registry = cachedRegistry
           }
         },
       },
@@ -273,4 +276,35 @@ function fileNameToPascalCase(fileName: string, ext: string) {
   const parts = fileName.split('/')
   const componentFileName = parts.at(-1)?.replace('.tsx', '')
   return parts.slice(0, -1).join('/') + pascalcase(componentFileName) + ext
+}
+
+function getCachedRegistryPath() {
+  return path.join(getPaths().generated.base, 'shadcn', 'registry.json')
+}
+
+function getCacheMetadataPath() {
+  return path.join(getPaths().generated.base, 'shadcn', 'metadata.json')
+}
+
+function shouldUpdateRegistryCache() {
+  if (!fs.existsSync(getCacheMetadataPath())) {
+    return true
+  }
+
+  const metadata = JSON.parse(fs.readFileSync(getCacheMetadataPath(), 'utf-8'))
+
+  const updatedAt = new Date(metadata.timestamp).getDate()
+
+  if (new Date().getDate() < updatedAt) {
+    // Something weird going on. Some timezone stuff maybe. Let's refetch just to be safe
+    return true
+  }
+
+  const fiveMin = 5 * 60 * 1000
+  if (new Date().getDate() > updatedAt + fiveMin) {
+    // Cache is too old. Refetch
+    return true
+  }
+
+  return !fs.existsSync(getCachedRegistryPath())
 }
