@@ -44,7 +44,7 @@ try {
 
 process.env['RWJS_CWD'] = cwd
 
-yargs()
+yargs(hideBin(process.argv))
   .scriptName(scriptName)
   .option('cwd', {
     type: 'string',
