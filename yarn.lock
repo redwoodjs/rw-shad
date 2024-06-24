@@ -706,6 +706,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@listr2/prompt-adapter-enquirer@npm:2.0.10":
+  version: 2.0.10
+  resolution: "@listr2/prompt-adapter-enquirer@npm:2.0.10"
+  peerDependencies:
+    enquirer: ">= 2.3.0 < 3"
+  checksum: 10c0/e0d0b7777544e776649e41c670bc2972ce69213d9d707b2763d8bbdd239939b517c8b1c56094658473cbf7c2a2a86ae896ab74261df5efa88428175303451386
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -4146,6 +4155,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "rwgc@workspace:."
   dependencies:
+    "@listr2/prompt-adapter-enquirer": "npm:2.0.10"
     "@redwoodjs/cli-helpers": "npm:5.4.3"
     "@types/findup-sync": "npm:4.0.2"
     "@types/node": "npm:20.14.8"

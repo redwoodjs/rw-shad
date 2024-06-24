@@ -3,6 +3,7 @@ import path from 'path'
 
 import execa from 'execa'
 import { Listr } from 'listr2'
+import { ListrEnquirerPromptAdapter } from '@listr2/prompt-adapter-enquirer'
 import pascalcase from 'pascalcase'
 
 import * as cliHelpers from '@redwoodjs/cli-helpers'
@@ -84,7 +85,8 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Component selection...',
         task: async (_ctx, task) => {
-          const components = await task.prompt({
+          const prompt = task.prompt(ListrEnquirerPromptAdapter)
+          const components = await prompt.run({
             type: 'multiselect',
             message: `Select the components you want to add (Press ${colors.green(
               '<space>',
@@ -92,6 +94,8 @@ export const handler = async ({ components, force }: CommandOptions) => {
             footer: '\nEnter to confirm your choices and continue',
             name: 'name',
             required: true,
+            // This is a workaround for https://github.com/enquirer/enquirer/issues/426
+            limit: process.stdout.rows - 7,
             // For Vim users (related: https://github.com/enquirer/enquirer/pull/163)
             j() {
               return this.down()
@@ -268,7 +272,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
         },
       },
     ],
-    { rendererOptions: { collapse: false } },
+    { rendererOptions: { collapseSubtasks: false } },
   )
 
   try {

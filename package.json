@@ -42,6 +42,7 @@
     "typescript": "5.5.2"
   },
   "dependencies": {
+    "@listr2/prompt-adapter-enquirer": "2.0.10",
     "@redwoodjs/cli-helpers": "5.4.3",
     "enquirer": "2.4.1",
     "execa": "5.1.1",
