@@ -143,6 +143,8 @@ export const handler = async ({ components, force }: CommandOptions) => {
                   newComponents.set(depName, dep)
                 }
               })
+            } else {
+              throw new Error(`Component "${componentName}" not found in registry`)
             }
           })
 
