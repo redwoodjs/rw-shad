@@ -320,15 +320,15 @@ function shouldUpdateRegistryCache() {
 
   const metadata = JSON.parse(fs.readFileSync(getCacheMetadataPath(), 'utf-8'))
 
-  const updatedAt = new Date(metadata.timestamp).getDate()
+  const updatedAt = new Date(metadata.timestamp).getTime()
 
-  if (new Date().getDate() < updatedAt) {
+  if (new Date().getTime() < updatedAt) {
     // Something weird going on. Some timezone stuff maybe. Let's refetch just to be safe
     return true
   }
 
   const fiveMin = 5 * 60 * 1000
-  if (new Date().getDate() > updatedAt + fiveMin) {
+  if (new Date().getTime() > updatedAt + fiveMin) {
     // Cache is too old. Refetch
     return true
   }
