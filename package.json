@@ -15,8 +15,7 @@
     "cleannpx": "rm -fr ./npx && mkdir -p ./npx/dist && mkdir ./npx/templates",
     "copypkgfiles": "yarn cleannpx && cp README.md ./npx/ && cp package.json ./npx/",
     "copybin": "cp ./dist/*.js ./npx/dist",
-    "copytemplates": "cp ./templates/* ./npx/templates/",
-    "copyforrelease": "yarn copypkgfiles && yarn copybin && yarn copytemplates",
+    "copyforrelease": "yarn copypkgfiles && yarn copybin",
     "release:patch": "yarn build && npm version patch && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
     "release:minor": "yarn build && npm version minor && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
     "release:major": "yarn build && npm version major && yarn copyforrelease && cd npx && npm publish && git push --follow-tags"
