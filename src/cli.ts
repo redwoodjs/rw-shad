@@ -9,10 +9,12 @@ import { scriptName, command, description, builder, handler } from './rwgc.js'
 
 // @ts-ignore
 let { cwd, help } = Parser(hideBin(process.argv))
-cwd = path.resolve(cwd ?? process.env['RWJS_CWD'])
+cwd = cwd ?? process.env['RWJS_CWD']
 
 try {
   if (cwd) {
+    cwd = path.resolve(cwd ?? process.env['RWJS_CWD'])
+
     // `cwd` was set by the `--cwd` option or the `RWJS_CWD` env var. In this case,
     // we don't want to find up for a `redwood.toml` file. The `redwood.toml` should just be in that directory.
     if (!fs.existsSync(path.join(cwd, 'redwood.toml')) && !help) {
