@@ -1,6 +1,6 @@
 {
   "name": "rwgc",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Generate components in a RedwoodJS project",
   "repository": {
     "type": "git",
