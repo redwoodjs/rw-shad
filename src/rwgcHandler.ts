@@ -130,6 +130,29 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Adding component(s)...',
         task: async (ctx) => {
+          const newComponents = new Map<string, Component>()
+
+          componentNames.forEach((componentName) => {
+            const component = registry.find((c) => c.name === componentName)
+
+            if (component) {
+              newComponents.set(componentName, component)
+              component.registryDependencies?.forEach((depName) => {
+                const dep = registry.find((c) => c.name === depName)
+                if (dep) {
+                  newComponents.set(depName, dep)
+                }
+              })
+            }
+          })
+
+          if (!force && someComponentExists(newComponents)) {
+            throw new Error(
+              'One or more of the listed component(s) already ' +
+                'exists. Use --force to overwrite',
+            )
+          }
+
           const args = [
             'shadcn-ui@latest',
             'add',
@@ -147,30 +170,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
             options.cwd = process.env['RWJS_CWD']
           }
 
-          await execa('npx', args, options).catch((error) => {
-            if (error.stdout.includes('--overwrite')) {
-              const msg = 'Component already exists. Use --force to overwrite'
-              throw new Error(msg)
-            } else {
-              throw error
-            }
-          })
-
-          const newComponents = new Map<string, Component>()
-
-          componentNames.forEach((componentName) => {
-            const component = registry.find((c) => c.name === componentName)
-
-            if (component) {
-              newComponents.set(componentName, component)
-              component.registryDependencies?.forEach((depName) => {
-                const dep = registry.find((c) => c.name === depName)
-                if (dep) {
-                  newComponents.set(depName, dep)
-                }
-              })
-            }
-          })
+          await execa('npx', args, options)
 
           ctx.newComponents = newComponents
         },
@@ -334,4 +334,31 @@ function shouldUpdateRegistryCache() {
   }
 
   return !fs.existsSync(getCachedRegistryPath())
+}
+
+function someComponentExists(newComponents: Map<string, Component>) {
+  const existing = Array.from(newComponents.values()).some((component) => {
+    const firstFileName = component.files[0]
+
+    if (!firstFileName) {
+      return false
+    }
+
+    const ext = isTypeScriptProject()
+      ? firstFileName.endsWith('.tsx')
+        ? '.tsx'
+        : '.ts'
+      : firstFileName.endsWith('jsx')
+        ? '.jsx'
+        : '.js'
+
+    const pascalComponentPath = path.join(
+      getPaths().web.components,
+      fileNameToPascalCase(firstFileName, ext),
+    )
+
+    return fs.existsSync(pascalComponentPath)
+  })
+
+  return existing
 }
