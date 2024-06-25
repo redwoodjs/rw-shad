@@ -56,6 +56,9 @@ export const handler = async ({ components, force }: CommandOptions) => {
             ) {
               registry = json
 
+              fs.mkdirSync(path.dirname(getCachedRegistryPath()), {
+                recursive: true,
+              })
               fs.writeFileSync(
                 getCachedRegistryPath(),
                 JSON.stringify(json, null, 2),
@@ -144,7 +147,9 @@ export const handler = async ({ components, force }: CommandOptions) => {
                 }
               })
             } else {
-              throw new Error(`Component "${componentName}" not found in registry`)
+              throw new Error(
+                `Component "${componentName}" not found in registry`,
+              )
             }
           })
 
