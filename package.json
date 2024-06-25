@@ -41,7 +41,7 @@
     "typescript": "5.5.2"
   },
   "dependencies": {
-    "@listr2/prompt-adapter-enquirer": "https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.11.tgz",
+    "@listr2/prompt-adapter-enquirer": "https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.12.tgz",
     "@redwoodjs/cli-helpers": "5.4.3",
     "enquirer": "2.4.1",
     "execa": "5.1.1",
