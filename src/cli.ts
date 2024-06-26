@@ -5,7 +5,7 @@ import findup from 'findup-sync'
 import { hideBin, Parser } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
 
-import { scriptName, command, description, builder, handler } from './rwgc.js'
+import { scriptName, command, description, builder, handler } from './rwShad.js'
 
 // @ts-ignore
 let { cwd, help } = Parser(hideBin(process.argv))

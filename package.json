@@ -1,10 +1,10 @@
 {
-  "name": "rwgc",
+  "name": "rw-shad",
   "version": "0.3.7",
-  "description": "Generate components in a RedwoodJS project",
+  "description": "Add shadcn components to a RedwoodJS project",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tobbe/rwgc"
+    "url": "https://github.com/Tobbe/rw-shad"
   },
   "type": "module",
   "main": "./dist/cli.js",
@@ -41,7 +41,7 @@
     "typescript": "5.5.2"
   },
   "dependencies": {
-    "@listr2/prompt-adapter-enquirer": "https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.15.tgz",
+    "@listr2/prompt-adapter-enquirer": "https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.16.tgz",
     "@redwoodjs/cli-helpers": "5.4.3",
     "enquirer": "2.4.1",
     "execa": "5.1.1",

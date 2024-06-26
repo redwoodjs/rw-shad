@@ -706,13 +706,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@listr2/prompt-adapter-enquirer@https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.15.tgz":
-  version: 2.0.15
-  resolution: "@listr2/prompt-adapter-enquirer@https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.15.tgz"
+"@listr2/prompt-adapter-enquirer@https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.16.tgz":
+  version: 2.0.16
+  resolution: "@listr2/prompt-adapter-enquirer@https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.16.tgz"
   peerDependencies:
     enquirer: ">= 2.3.0 < 3"
-    listr2: "workspace:8.2.3"
-  checksum: 10c0/9c60fabe9b72f388504265f167b742fd36d182af1c7553d2d762aa219bbd29c70f99f9db61d3c63c85be532c7a9c1a3838ff4ec1a778de81041b4758b3cca319
+    listr2: 8.2.3
+  checksum: 10c0/fb66d354122a2c864539dd2ef0ef5d18036bd013f0df4f96c6c7731d5fc6a0b2a2ce86ea4cb1e3b934b9684f4d5bdb4c19c819698a220880e08fc8178f5c958f
   languageName: node
   linkType: hard
 
@@ -4152,11 +4152,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rwgc@workspace:.":
+"rw-shad@workspace:.":
   version: 0.0.0-use.local
-  resolution: "rwgc@workspace:."
+  resolution: "rw-shad@workspace:."
   dependencies:
-    "@listr2/prompt-adapter-enquirer": "https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.15.tgz"
+    "@listr2/prompt-adapter-enquirer": "https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.16.tgz"
     "@redwoodjs/cli-helpers": "npm:5.4.3"
     "@types/findup-sync": "npm:4.0.2"
     "@types/node": "npm:20.14.8"
@@ -4173,7 +4173,7 @@ __metadata:
     typescript: "npm:5.5.2"
     yargs: "npm:17.7.1"
   bin:
-    rwgc: ./dist/cli.js
+    rw-shad: ./dist/cli.js
   languageName: unknown
   linkType: soft
 

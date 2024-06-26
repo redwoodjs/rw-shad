@@ -1,5 +1,5 @@
-rwgc
-====
+rw-shad
+=======
 
 Generate components in your RedwoodJS project
 
@@ -7,7 +7,7 @@ Usage
 -----
 
 ```
-yarn rwgc <component>
+yarn rw-shad <component>
 ```
 
 Details

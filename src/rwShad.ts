@@ -1,7 +1,7 @@
 import type { Argv } from 'yargs'
 import type { BaseOptions, CommandOptions } from './yargsTypes.js'
 
-export const scriptName = 'rwgc'
+export const scriptName = 'rw-shad'
 
 export const command = '$0 [components..]'
 
@@ -23,6 +23,6 @@ export const builder = (yargs: Argv<BaseOptions>) => {
 }
 
 export const handler = async (options: CommandOptions) => {
-  const { handler } = await import('./rwgcHandler.js')
+  const { handler } = await import('./rwShadHandler.js')
   return handler(options)
 }
