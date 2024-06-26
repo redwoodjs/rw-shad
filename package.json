@@ -12,7 +12,7 @@
   "scripts": {
     "start": "tsx src/cli",
     "build": "rm -fr ./dist && pkgroll",
-    "cleannpx": "rm -fr ./npx && mkdir -p ./npx/dist && mkdir ./npx/templates",
+    "cleannpx": "rm -fr ./npx && mkdir -p ./npx/dist",
     "copypkgfiles": "yarn cleannpx && cp README.md ./npx/ && cp package.json ./npx/",
     "copybin": "cp ./dist/*.js ./npx/dist",
     "copyforrelease": "yarn copypkgfiles && yarn copybin",
