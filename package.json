@@ -1,10 +1,10 @@
 {
-  "name": "setup-rwgc",
+  "name": "setup-rw-shad",
   "version": "0.3.0",
-  "description": "Setup rwgc in a RedwoodJS project",
+  "description": "Setup rw-shad in a RedwoodJS project",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tobbe/setup-rwgc"
+    "url": "https://github.com/Tobbe/setup-rw-shad"
   },
   "main": "./dist/cli.js",
   "bin": "./dist/cli.js",

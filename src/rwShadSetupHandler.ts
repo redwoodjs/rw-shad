@@ -109,7 +109,7 @@ export const handler = async ({ force }: { force: boolean }) => {
         title: 'Installing packages...',
         task: async () => {
           await execa.command(
-            'yarn add rwgc',
+            'yarn add rw-shad',
             process.env['RWJS_CWD']
               ? {
                   cwd: process.env['RWJS_CWD'],
@@ -147,7 +147,7 @@ export const handler = async ({ force }: { force: boolean }) => {
               hasConflictingContentSetting(twConfig)
             ) {
               throw new Error(
-                "Can't merge rwgc Tailwind config with your existing " +
+                "Can't merge rw-shad Tailwind config with your existing " +
                   'Tailwind config.\n  Use --force to overwrite your ' +
                   'config'
               )
@@ -155,7 +155,8 @@ export const handler = async ({ force }: { force: boolean }) => {
 
             task.output = colors.warning(
               'Your Tailwind config already had customizations. ' +
-                "We've done our best to merge the rwgc settings with yours\n" +
+                "We've done our best to merge the rw-shad settings with " +
+                'yours\n' +
                 "If things don't work as expected we recommend you " +
                 'rerun the setup with --force to overwrite your config'
             )
@@ -401,7 +402,7 @@ export const handler = async ({ force }: { force: boolean }) => {
     console.log(colors.green('https://twitter.com/tobbedotdev'))
     console.log()
     console.log(
-      colors.info('Now try `yarn rwgc button` to generate your first component')
+      colors.info('Now try `yarn rw-shad button` to generate your first component')
     )
     console.log()
   } catch (e) {

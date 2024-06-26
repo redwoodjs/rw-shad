@@ -1,27 +1,27 @@
-setup-rwgc
-==========
+setup-rw-shad
+=============
 
-Command for setting up [rwgc](https://github.com/Tobbe/rwgc) in a RedwoodJS project
+Command for setting up [rw-shad](https://github.com/Tobbe/rw-shad) in a RedwoodJS project
 
 Setup
 -----
 
 ```
-yarn dlx setup-rwgc
+yarn dlx setup-rw-shad
 ```
 
-Run the command above inside your Redwood project and it'll setup [rwgc](https://github.com/Tobbe/rwgc) for you.
+Run the command above inside your Redwood project and it'll setup [rw-shad](https://github.com/Tobbe/rw-shad) for you.
 You'll get a tailor-made setup of [shadcn/ui](https://ui.shadcn.com) for Redwood, with a RW specific cli to generate components.
 
 Usage
 -----
 
-Inside your Redwood project you can now use the `rwgc` command to generate components.
+Inside your Redwood project you can now use the `rw-shad` command to generate components.
 
 For example, the command below will generate a button component
 
 ```
-yarn rwgc button
+yarn rw-shad button
 ```
 
 Note
