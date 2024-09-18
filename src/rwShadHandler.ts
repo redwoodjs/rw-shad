@@ -161,7 +161,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
           }
 
           const args = [
-            'shadcn-ui@latest',
+            'shadcn-ui@0.8.0',
             'add',
             '--cwd',
             // Need to set --cwd to the config dir for shadcn to find the
