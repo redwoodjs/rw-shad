@@ -132,18 +132,16 @@ export const handler = async ({ components, force }: CommandOptions) => {
       },
       {
         title: 'Adding component(s)...',
-        task: async (ctx) => {
-          const newComponents = new Map<string, Component>()
-
+        task: async (ctx, task) => {
           componentNames.forEach((componentName) => {
             const component = registry.find((c) => c.name === componentName)
 
             if (component) {
-              newComponents.set(componentName, component)
+              ctx.newComponents.set(componentName, component)
               component.registryDependencies?.forEach((depName) => {
                 const dep = registry.find((c) => c.name === depName)
                 if (dep) {
-                  newComponents.set(depName, dep)
+                  ctx.newComponents.set(depName, dep)
                 }
               })
             } else {
@@ -153,11 +151,29 @@ export const handler = async ({ components, force }: CommandOptions) => {
             }
           })
 
-          if (!force && someComponentExists(newComponents)) {
-            throw new Error(
-              'One or more of the listed component(s) already ' +
-                'exists. Use --force to overwrite',
-            )
+          const existingComponents = getPreExistingComponents(ctx.newComponents)
+
+          if (!force) {
+            existingComponents.forEach((component) => {
+              ctx.newComponents.delete(component.name)
+            })
+
+            if (existingComponents.length > 0) {
+              // TODO: Only output names of "top level" components (those that
+              // are part of `componentName`) and/or say "skipping existing
+              // dependency <component name>"
+              task.output =
+                existingComponents.length === 1
+                  ? 'Skipping existing component:'
+                  : 'Skipping existing components:'
+              task.output = existingComponents
+                .map((component) => component.name)
+                .join(', ')
+            }
+          }
+
+          if (ctx.newComponents.size === 0) {
+            return
           }
 
           const args = [
@@ -169,7 +185,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
             getPaths().web.config,
             '--yes',
             force && '--overwrite',
-            ...componentNames,
+            ...ctx.newComponents.keys(),
           ].filter(Boolean)
 
           const options: Writeable<execa.Options> = {}
@@ -178,12 +194,29 @@ export const handler = async ({ components, force }: CommandOptions) => {
           }
 
           await execa('npx', args, options)
-
-          ctx.newComponents = newComponents
+        },
+        rendererOptions: {
+          outputBar: Infinity,
+          persistentOutput: true,
+        },
+      },
+      {
+        title: '',
+        enabled: (ctx) => ctx.newComponents.size === 0,
+        task: (_ctx, task) => {
+          // Only have this task to get the output I want when there
+          // are no new components to add
+          // Can't have an initial title because then that will be shown (with a
+          // grey icon) while previous tasks are running
+          task.title = 'No new components to add'
+        },
+        rendererOptions: {
+          persistentOutput: false,
         },
       },
       {
         title: 'Formatting source(s)...',
+        enabled: (ctx) => ctx.newComponents.size > 0,
         task: () => {
           // TODO: use ctx.newComponents to only lint newly added files
 
@@ -205,6 +238,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
       },
       {
         title: 'Renaming file(s)...',
+        enabled: (ctx) => ctx.newComponents.size > 0,
         task: (ctx) => {
           ctx.newComponents.forEach((component) => {
             component.files.forEach((fileName) => {
@@ -232,6 +266,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
       },
       {
         title: 'Updating import(s)...',
+        enabled: (ctx) => ctx.newComponents.size > 0,
         task: (ctx) => {
           ctx.newComponents.forEach((component) => {
             component.files.forEach((fileName) => {
@@ -279,7 +314,16 @@ export const handler = async ({ components, force }: CommandOptions) => {
         },
       },
     ],
-    { rendererOptions: { collapseSubtasks: false } },
+    {
+      rendererOptions: {
+        collapseSubtasks: false,
+        showSkipMessage: true,
+        collapseSkips: false,
+      },
+      ctx: {
+        newComponents: new Map<string, Component>(),
+      },
+    },
   )
 
   try {
@@ -343,8 +387,8 @@ function shouldUpdateRegistryCache() {
   return !fs.existsSync(getCachedRegistryPath())
 }
 
-function someComponentExists(newComponents: Map<string, Component>) {
-  const existing = Array.from(newComponents.values()).some((component) => {
+function getPreExistingComponents(newComponents: Map<string, Component>) {
+  const existing = Array.from(newComponents.values()).filter((component) => {
     const firstFileName = component.files[0]
 
     if (!firstFileName) {
