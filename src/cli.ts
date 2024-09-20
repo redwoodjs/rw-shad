@@ -27,7 +27,7 @@ try {
 
     if (!redwoodTOMLPath && !help) {
       throw new Error(
-        `Couldn't find up a "redwood.toml" file from ${process.cwd()}`
+        `Couldn't find up a "redwood.toml" file from ${process.cwd()}`,
       )
     }
 
@@ -51,7 +51,7 @@ const majorVersion = parseInt(stdout.split('.')[0] || '0', 10)
 
 if (majorVersion < 3) {
   throw new Error(
-    `You are using yarn ${stdout}. Please upgrade to yarn 3 or above`
+    `You are using yarn ${stdout}. Please upgrade to yarn 3 or above`,
   )
 }
 

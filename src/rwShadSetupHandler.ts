@@ -100,7 +100,7 @@ export const handler = async ({ force }: { force: boolean }) => {
           if (!fs.existsSync(twConfigPath)) {
             throw new Error(
               'Tailwind has not been set up yet.\n' +
-                'Please run `yarn rw setup ui tailwind` first.'
+                'Please run `yarn rw setup ui tailwind` first.',
             )
           }
         },
@@ -114,7 +114,7 @@ export const handler = async ({ force }: { force: boolean }) => {
               ? {
                   cwd: process.env['RWJS_CWD'],
                 }
-              : {}
+              : {},
           )
 
           await execa.command(
@@ -123,7 +123,7 @@ export const handler = async ({ force }: { force: boolean }) => {
               ? {
                   cwd: process.env['RWJS_CWD'],
                 }
-              : {}
+              : {},
           )
         },
       },
@@ -149,7 +149,7 @@ export const handler = async ({ force }: { force: boolean }) => {
               throw new Error(
                 "Can't merge rw-shad Tailwind config with your existing " +
                   'Tailwind config.\n  Use --force to overwrite your ' +
-                  'config'
+                  'config',
               )
             }
 
@@ -158,7 +158,7 @@ export const handler = async ({ force }: { force: boolean }) => {
                 "We've done our best to merge the rw-shad settings with " +
                 'yours\n' +
                 "If things don't work as expected we recommend you " +
-                'rerun the setup with --force to overwrite your config'
+                'rerun the setup with --force to overwrite your config',
             )
           }
 
@@ -261,12 +261,12 @@ export const handler = async ({ force }: { force: boolean }) => {
 
           twConfigStr = twConfigStr.replace(
             '"%FONT_FAMILY_SANS%"',
-            '...fontFamily.sans'
+            '...fontFamily.sans',
           )
 
           twConfigStr = twConfigStr.replace(
             '"%REQUIRE_TW_ANIMATE%"',
-            "require('tailwindcss-animate')"
+            "require('tailwindcss-animate')",
           )
 
           writeFile(twConfigPath, twConfigStr, { existingFiles: 'OVERWRITE' })
@@ -277,7 +277,7 @@ export const handler = async ({ force }: { force: boolean }) => {
               ? {
                   cwd: process.env['RWJS_CWD'],
                 }
-              : {}
+              : {},
           )
         },
         rendererOptions: {
@@ -297,7 +297,7 @@ export const handler = async ({ force }: { force: boolean }) => {
           if (indexCss.includes('@layer base {')) {
             task.output = colors.warning(
               'index.css already contains base styles. Please double check ' +
-                'the updated index.css file for any conflicts'
+                'the updated index.css file for any conflicts',
             )
           }
 
@@ -305,12 +305,12 @@ export const handler = async ({ force }: { force: boolean }) => {
             __dirname,
             '..',
             'templates',
-            'index.css.template'
+            'index.css.template',
           )
           writeFile(
             indexCssPath,
             indexCss + fs.readFileSync(indexCssTemplatePath, 'utf-8'),
-            { existingFiles: 'OVERWRITE' }
+            { existingFiles: 'OVERWRITE' },
           )
         },
         options: {
@@ -329,7 +329,7 @@ export const handler = async ({ force }: { force: boolean }) => {
 
           if (!force && fs.existsSync(cnUtilPath)) {
             throw new Error(
-              'utils/cn.ts already exists.\nUse --force to override existing config.'
+              'utils/cn.ts already exists.\nUse --force to override existing config.',
             )
           }
 
@@ -337,7 +337,7 @@ export const handler = async ({ force }: { force: boolean }) => {
             __dirname,
             '..',
             'templates',
-            'cn.ts.template'
+            'cn.ts.template',
           )
           writeFile(cnUtilPath, fs.readFileSync(cnUtilTemplatePath, 'utf-8'), {
             existingFiles: 'OVERWRITE',
@@ -354,11 +354,11 @@ export const handler = async ({ force }: { force: boolean }) => {
 
           const componentsConfigPath = path.join(
             getPaths().web.config,
-            'components.json'
+            'components.json',
           )
           if (!force && fs.existsSync(componentsConfigPath)) {
             throw new Error(
-              'Components config already exists.\nUse --force to override existing config.'
+              'Components config already exists.\nUse --force to override existing config.',
             )
           }
 
@@ -366,30 +366,30 @@ export const handler = async ({ force }: { force: boolean }) => {
             __dirname,
             '..',
             'templates',
-            'components.json.template'
+            'components.json.template',
           )
 
           let componentsConfig = fs.readFileSync(
             componentsConfigTemplatePath,
-            'utf-8'
+            'utf-8',
           )
 
           if (!isTypeScriptProject()) {
             componentsConfig = componentsConfig.replace(
               '"tsx": true',
-              '"tsx": false'
+              '"tsx": false',
             )
           }
 
           writeFile(
             componentsConfigPath,
             fs.readFileSync(componentsConfigTemplatePath, 'utf-8'),
-            { existingFiles: 'OVERWRITE' }
+            { existingFiles: 'OVERWRITE' },
           )
         },
       },
     ],
-    { rendererOptions: { collapse: false } }
+    { rendererOptions: { collapse: false } },
   )
 
   try {
@@ -398,12 +398,14 @@ export const handler = async ({ force }: { force: boolean }) => {
     // TODO: Link to GH issues/PRs
     console.log()
     console.log(
-      colors.green('Send me a DM or @ me on Twitter with any feedback')
+      colors.green('Send me a DM or @ me on Twitter with any feedback'),
     )
     console.log(colors.green('https://twitter.com/tobbedotdev'))
     console.log()
     console.log(
-      colors.info('Now try `yarn rw-shad button` to generate your first component')
+      colors.info(
+        'Now try `yarn rw-shad button` to generate your first component',
+      ),
     )
     console.log()
   } catch (e) {

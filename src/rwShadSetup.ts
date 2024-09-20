@@ -8,7 +8,7 @@ interface ForceOptions extends BaseOptions {
   force: boolean
 }
 
-export const scriptName = "setup-rw-shad"
+export const scriptName = 'setup-rw-shad'
 
 export const description = 'Setup rw-shad'
 
