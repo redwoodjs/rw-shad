@@ -280,7 +280,8 @@ export const handler = async ({ force }: { force: boolean }) => {
               : {}
           )
         },
-        options: {
+        rendererOptions: {
+          outputBar: Infinity,
           persistentOutput: true,
         },
       },

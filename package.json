@@ -44,7 +44,7 @@
     "execa": "5.1.1",
     "findup-sync": "5.0.0",
     "json-stable-stringify": "1.0.2",
-    "listr2": "5.0.7",
+    "listr2": "8.2.4",
     "yargs": "17.7.1"
   },
   "packageManager": "yarn@4.3.1"
