@@ -2,6 +2,11 @@ rw-shad
 =======
 
 Generate components in your RedwoodJS project
+Install
+-----
+```
+yarn dlx setup-rw-shad
+```
 
 Usage
 -----
