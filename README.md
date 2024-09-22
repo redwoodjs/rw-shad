@@ -13,7 +13,7 @@ yarn rw-shad <component>
 Details
 -------
 
-Under the hood this will run `npx shadcn-ui@latest add --cwd ./config --path components/ui --yes <component>`
+Under the hood this will run `npx shadcn-ui@0.8.0 add --cwd ./config --path components/ui --yes <component>`
 
 Contributing
 ------------
