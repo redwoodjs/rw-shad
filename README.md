@@ -1,28 +1,10 @@
-rw-shad
-=======
+rw-shad Monorepo
+================
 
-Generate components in your RedwoodJS project
+Welcome to the rw-shad monorepo.
 
-Usage
------
+[packges/add](packages/add) is home to the `rw-shad` command line tool. This
+tool is used to generate components in your RW project.
 
-```
-yarn rw-shad <component>
-```
-
-Details
--------
-
-Under the hood this will run `npx https://verdaccio.tobbe.dev/shadcn/-/shadcn-2.1.2-config-dir.tgz add --config-dir config --path components/ui --yes <component>`
-
-Contributing
-------------
-
-If you want to add JS support, or contribute any other changes an easy way to test this locally is:
-```
-yarn start --cwd ../rw-example-project <component>
-```
-
-### Releasing
-
-It's made to be released by npm (e.g. `npm run release:patch`). That way I don't have to worry about yarn v1 vs v3
+[packges/setup](packages/setup) is home to the `setup-rw-shad` command line
+tool. This tool is used to setup a new RW project with the `rw-shad` command
