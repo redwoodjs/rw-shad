@@ -177,23 +177,53 @@ export const handler = async ({ components, force }: CommandOptions) => {
           }
 
           const args = [
-            'shadcn-ui@0.8.0',
+            '--yes',
+            'https://verdaccio.tobbe.dev/shadcn/-/shadcn-2.1.2-tobbe-20241029-0244.tgz',
             'add',
             '--cwd',
-            // Need to set --cwd to the config dir for shadcn to find the
-            // config file
-            getPaths().web.config,
-            '--yes',
+            // shadcn will look for a package.json in this directory
+            getPaths().web.base,
+            '--config-dir',
+            // This is where shadcn should look for components.json
+            path.relative(getPaths().web.base, getPaths().web.config),
             force && '--overwrite',
             ...ctx.newComponents.keys(),
-          ].filter(Boolean)
+          ].filter((n?: string | false): n is string => Boolean(n))
 
-          const options: Writeable<execa.Options> = {}
+          const options: Writeable<execa.Options> = { stdio: 'pipe' }
           if (process.env['RWJS_CWD']) {
             options.cwd = process.env['RWJS_CWD']
           }
 
-          await execa('npx', args, options)
+          // If shadcn changes something and we get a prompt this will hang
+          // forever. The user will probably press Ctrl+C and hopefully report
+          // the issue to us. To aid in debugging I want to know what the
+          // prompt was. So we capture all output and if we receive an 'exit'
+          // signal we throw an error with the captured output.
+          const npxProcess = execa('npx', args, options)
+
+          const output: Buffer[] = []
+
+          npxProcess.stdout?.on('data', (data) => {
+            output.push(data)
+          })
+          npxProcess.stdout?.on('error', (error) => {
+            output.push(Buffer.from(error.message))
+          })
+          npxProcess.stderr?.on('data', (data) => {
+            output.push(data)
+          })
+
+          const exitListener = () => {
+            const unexpectedOutput = Buffer.concat(output).toString('utf-8')
+            throw new Error('Unexpected output\n' + unexpectedOutput)
+          }
+
+          process.addListener('exit', exitListener)
+
+          await npxProcess
+
+          process.removeListener('exit', exitListener)
         },
         rendererOptions: {
           outputBar: Infinity,
