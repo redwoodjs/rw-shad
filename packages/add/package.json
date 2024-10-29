@@ -4,7 +4,8 @@
   "description": "Add shadcn components to a RedwoodJS project",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tobbe/rw-shad"
+    "url": "https://github.com/Tobbe/rw-shad",
+    "directory": "packages/add"
   },
   "type": "module",
   "main": "./dist/cli.js",
