@@ -1,54 +1,12 @@
 {
-  "name": "rw-shad",
-  "version": "2.0.0",
-  "description": "Add shadcn components to a RedwoodJS project",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Tobbe/rw-shad"
-  },
-  "type": "module",
-  "main": "./dist/cli.js",
-  "bin": "./dist/cli.js",
-  "scripts": {
-    "start": "tsx src/cli",
-    "build": "rm -fr ./dist && pkgroll",
-    "cleannpx": "rm -fr ./npx && mkdir -p ./npx/dist",
-    "copypkgfiles": "yarn cleannpx && cp README.md ./npx/ && cp package.json ./npx/",
-    "copybin": "cp ./dist/*.js ./npx/dist",
-    "copyforrelease": "yarn copypkgfiles && yarn copybin",
-    "release:patch": "yarn build && npm version patch && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
-    "release:minor": "yarn build && npm version minor && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
-    "release:major": "yarn build && npm version major && yarn copyforrelease && cd npx && npm publish && git push --follow-tags"
-  },
-  "keywords": [
-    "redwood",
-    "redwoodjs",
-    "tailwind",
-    "tailwindcss",
-    "radix",
-    "shadcn"
-  ],
-  "author": "Tobbe Lundberg",
+  "private": true,
   "license": "MIT",
-  "devDependencies": {
-    "@types/findup-sync": "4.0.2",
-    "@types/node": "20.14.8",
-    "@types/pascalcase": "1.0.1",
-    "@types/yargs": "17.0.22",
-    "pkgroll": "1.9.0",
-    "prettier": "3.3.2",
-    "tsx": "4.15.7",
-    "typescript": "5.5.2"
-  },
-  "dependencies": {
-    "@listr2/prompt-adapter-enquirer": "https://verdaccio.tobbe.dev/@listr2/prompt-adapter-enquirer/-/prompt-adapter-enquirer-2.0.17.tgz",
-    "@redwoodjs/cli-helpers": "5.4.3",
-    "enquirer": "2.4.1",
-    "execa": "5.1.1",
-    "findup-sync": "5.0.0",
-    "listr2": "8.2.4",
-    "pascalcase": "1.0.0",
-    "yargs": "17.7.1"
-  },
-  "packageManager": "yarn@4.3.1"
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {},
+  "resolutions": {},
+  "devDependencies": {},
+  "packageManager": "yarn@4.4.0",
+  "npmClient": "yarn"
 }
