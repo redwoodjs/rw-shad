@@ -18,9 +18,12 @@
     "copybin": "cp ./dist/*.js ./npx/dist",
     "copytemplates": "cp ./templates/* ./npx/templates/",
     "copyforrelease": "yarn copypkgfiles && yarn copybin && yarn copytemplates",
-    "release:patch": "yarn build && npm version patch && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
-    "release:minor": "yarn build && npm version minor && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
-    "release:major": "yarn build && npm version major && yarn copyforrelease && cd npx && npm publish && git push --follow-tags"
+    "version:patch": "npm version patch --tag-version-prefix=setup-rw-shad/v",
+    "version:minor": "npm version minor --tag-version-prefix=setup-rw-shad/v",
+    "version:major": "npm version major --tag-version-prefix=setup-rw-shad/v",
+    "release:patch": "yarn build && yarn version:patch && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
+    "release:minor": "yarn build && yarn version:minor && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
+    "release:major": "yarn build && yarn version:major && yarn copyforrelease && cd npx && npm publish && git push --follow-tags"
   },
   "keywords": [
     "redwood",

@@ -4,11 +4,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {
-    "release:patch": "yarn workspaces foreach --all --parallel run release:patch",
-    "release:minor": "yarn workspaces foreach --all --parallel run release:minor",
-    "release:major": "yarn workspaces foreach --all --parallel run release:major"
-  },
   "packageManager": "yarn@4.5.1",
   "npmClient": "yarn"
 }
