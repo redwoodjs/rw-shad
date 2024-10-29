@@ -1,64 +1,14 @@
 {
-<<<<<<< HEAD
-  "name": "setup-rw-shad",
-  "version": "1.0.1",
-  "description": "Setup rw-shad in a RedwoodJS project",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Tobbe/setup-rw-shad"
-  },
-  "main": "./dist/cli.js",
-  "bin": "./dist/cli.js",
-  "scripts": {
-    "start": "tsx src/cli",
-    "build": "rm -fr ./dist && pkgroll",
-    "cleannpx": "rm -fr ./npx && mkdir -p ./npx/dist && mkdir ./npx/templates",
-    "copypkgfiles": "yarn cleannpx && cp README.md ./npx/ && cp package.json ./npx/",
-    "copybin": "cp ./dist/*.js ./npx/dist",
-    "copytemplates": "cp ./templates/* ./npx/templates/",
-    "copyforrelease": "yarn copypkgfiles && yarn copybin && yarn copytemplates",
-    "release:patch": "yarn build && npm version patch && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
-    "release:minor": "yarn build && npm version minor && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
-    "release:major": "yarn build && npm version major && yarn copyforrelease && cd npx && npm publish && git push --follow-tags"
-  },
-  "keywords": [
-    "redwood",
-    "redwoodjs",
-    "tailwind",
-    "tailwindcss",
-    "radix",
-    "shadcn"
-  ],
-  "author": "Tobbe Lundberg",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/findup-sync": "4.0.2",
-    "@types/json-stable-stringify": "1.0.34",
-    "@types/yargs": "17.0.22",
-    "pkgroll": "1.9.0",
-    "prettier": "3.3.2",
-    "tailwindcss": "3.3.3",
-    "tsx": "4.15.7"
-  },
-  "dependencies": {
-    "@redwoodjs/cli-helpers": "5.4.3",
-    "execa": "5.1.1",
-    "findup-sync": "5.0.0",
-    "json-stable-stringify": "1.0.2",
-    "listr2": "8.2.4",
-    "yargs": "17.7.1"
-  },
-  "packageManager": "yarn@4.3.1"
-=======
   "private": true,
   "license": "MIT",
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {},
-  "resolutions": {},
-  "devDependencies": {},
+  "scripts": {
+    "release:patch": "yarn workspaces foreach --all --parallel run release:patch",
+    "release:minor": "yarn workspaces foreach --all --parallel run release:minor",
+    "release:major": "yarn workspaces foreach --all --parallel run release:major"
+  },
   "packageManager": "yarn@4.4.0",
   "npmClient": "yarn"
->>>>>>> main
 }
