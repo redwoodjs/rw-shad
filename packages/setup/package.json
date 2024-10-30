@@ -18,9 +18,9 @@
     "copybin": "cp ./dist/*.js ./npx/dist",
     "copytemplates": "cp ./templates/* ./npx/templates/",
     "copyforrelease": "yarn copypkgfiles && yarn copybin && yarn copytemplates",
-    "version:patch": "npm version patch --tag-version-prefix=setup-rw-shad/v",
-    "version:minor": "npm version minor --tag-version-prefix=setup-rw-shad/v",
-    "version:major": "npm version major --tag-version-prefix=setup-rw-shad/v",
+    "version:patch": "yarn version patch && yarn tsx tag.ts",
+    "version:minor": "yarn version minor && yarn tsx tag.ts",
+    "version:major": "yarn version major && yarn tsx tag.ts",
     "release:patch": "yarn build && yarn version:patch && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
     "release:minor": "yarn build && yarn version:minor && yarn copyforrelease && cd npx && npm publish && git push --follow-tags",
     "release:major": "yarn build && yarn version:major && yarn copyforrelease && cd npx && npm publish && git push --follow-tags"
