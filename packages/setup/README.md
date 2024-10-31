@@ -10,8 +10,8 @@ Setup
 yarn dlx setup-rw-shad
 ```
 
-Run the command above inside your Redwood project and it'll setup [rw-shad](https://github.com/Tobbe/rw-shad) for you.
-You'll get a tailor-made setup of [shadcn/ui](https://ui.shadcn.com) for Redwood, with a RW specific cli to generate components.
+Run the command above inside your Redwood project and it'll setup [rw-shad](https://github.com/Tobbe/rw-shad/packages/add) for you.
+You'll get a tailor-made setup of [shadcn/ui](https://ui.shadcn.com) for Redwood, with a Redwood specific cli to generate components.
 
 Usage
 -----
@@ -39,4 +39,4 @@ yarn start --cwd ../rw-example-project --force
 
 ### Releasing
 
-It's made to be released by npm (e.g. `npm run release:patch`). That way I don't have to worry about yarn v1 vs v3
+Just run `yarn release:patch|minor|major` in this directory (`packages/setup`)
