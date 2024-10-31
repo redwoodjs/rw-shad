@@ -1,6 +1,6 @@
 {
   "name": "setup-rw-shad",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Setup rw-shad in a RedwoodJS project",
   "repository": {
     "type": "git",
