@@ -21,17 +21,34 @@ function isErrorWithExitCode(e: unknown): e is ErrorWithExitCode {
   return typeof (e as ErrorWithExitCode)?.exitCode !== 'undefined'
 }
 
+interface File {
+  path: string
+  type: string
+  content: string
+  target?: string
+  rwPath?: string
+}
+
 interface Component {
   name: string
   dependencies?: string[] | undefined
   registryDependencies?: string[] | undefined
-  files: Array<{ path: string; type: string }>
+  files: File[]
   type: string
 }
 
 type Registry = Array<Component>
 
+const REGISTRY_URL = process.env['REGISTRY_URL'] ?? 'https://ui.shadcn.com/r'
+
+// TODO: Read from components.json
+// path.join(getPaths().web.config, 'components.json')
+const config = {
+  style: 'default',
+}
+
 let registry: Registry = []
+let registryR: Registry = []
 
 export const handler = async ({ components, force }: CommandOptions) => {
   // shadcn/ui uses kebab-case for component names
@@ -59,13 +76,13 @@ export const handler = async ({ components, force }: CommandOptions) => {
             //   const url = getRegistryUrl(
             //     isUrl(itemUrl) ? itemUrl : `styles/${config.style}/${itemUrl}.json`
             //   )
-            const res = await fetch('https://ui.shadcn.com/r/index.json')
+            const res = await fetch(REGISTRY_URL + '/index.json')
             const json: any = await res.json()
             // Just a basic sanity check here
             if (
               Array.isArray(json) &&
               json.length > 10 &&
-              json.every((component) => typeof component.name === 'string')
+              json.every((component) => isComponent(component))
             ) {
               registry = json
 
@@ -146,26 +163,64 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Adding component(s)...',
         task: async (ctx, task) => {
-          componentNames.forEach((componentName) => {
-            const component = registry.find((c) => c.name === componentName)
+          await Promise.all(
+            componentNames.map(async (componentName) => {
+              const component = registry.find((c) => c.name === componentName)
 
-            if (component) {
-              ctx.newComponents.set(componentName, component)
-              component.registryDependencies?.forEach((depName) => {
-                // TODO: This is a bit broken. Will not find all new components
-                // like hooks. It should look for styles/[style]/[name].json
-                // Shad has changed things up a bit
-                const dep = registry.find((c) => c.name === depName)
-                if (dep) {
-                  ctx.newComponents.set(depName, dep)
+              if (component) {
+                ctx.newComponents.set(componentName, component)
+                component.registryDependencies?.forEach((depName) => {
+                  // TODO: This is a bit broken. Will not find all new components
+                  // like hooks. It should look for styles/[style]/[name].json
+                  // Shad has changed things up a bit
+                  const dep = registry.find((c) => c.name === depName)
+                  if (dep) {
+                    ctx.newComponents.set(depName, dep)
+                  }
+                })
+              } else {
+                try {
+                  const res = await fetch(getRegistryUrl(componentName))
+
+                  if (!res.ok) {
+                    throw new Error(
+                      `!res.ok. Component "${componentName}" not found in registry`,
+                    )
+                  }
+
+                  const json: any = await res.json()
+
+                  if (isComponent(json)) {
+                    const component = json as Component
+
+                    registryR.push(json)
+
+                    ctx.newComponents.set(componentName, json)
+                    component.registryDependencies?.forEach((depName) => {
+                      // TODO: This is a bit broken. Will not find all new components
+                      // like hooks. It should look for styles/[style]/[name].json
+                      // Shad has changed things up a bit
+                      const dep = registry.find((c) => c.name === depName)
+                      if (dep) {
+                        ctx.newComponents.set(depName, dep)
+                      }
+                    })
+
+                    return
+                  } else {
+                    throw new Error(
+                      `invalid json. Component "${componentName}" not found in registry`,
+                    )
+                  }
+                } catch (e) {
+                  console.error(e)
+                  throw new Error(
+                    `exception: Component "${componentName}" not found in registry`,
+                  )
                 }
-              })
-            } else {
-              throw new Error(
-                `Component "${componentName}" not found in registry`,
-              )
-            }
-          })
+              }
+            }),
+          )
 
           // TODO: Not everything in `newComponents` are really "components".
           // Some are for example hooks, so `getPreExistingComponents` won't
@@ -271,9 +326,51 @@ export const handler = async ({ components, force }: CommandOptions) => {
         },
       },
       {
+        title: 'Renaming file(s)...',
+        enabled: (ctx) => ctx.newComponents.size > 0,
+        task: (ctx) => {
+          ctx.newComponents.forEach((component) => {
+            component.files.forEach((file) => {
+              const fileName =
+                file.type === 'registry:ui'
+                  ? file.path
+                  : (file.target || file.path)
+                      ?.split('/')
+                      ?.at(file.type === 'registry:page' ? -2 : -1)
+
+              if (!fileName) {
+                throw new Error(
+                  `Could not determine file name for: ${JSON.stringify(file)}`,
+                )
+              }
+
+              const ext = isTypeScriptProject()
+                ? (file.target || file.path).endsWith('.tsx')
+                  ? '.tsx'
+                  : '.ts'
+                : (file.target || file.path).endsWith('jsx')
+                  ? '.jsx'
+                  : '.js'
+
+              const componentPath = path.join(
+                getShadTargetDir(file),
+                (file.target || fileName).replace(/\.tsx?/, ext),
+              )
+              const pascalComponentPath = path.join(
+                getTargetDir(file),
+                fileNameToPascalCase(fileName, ext),
+              )
+
+              fs.renameSync(componentPath, pascalComponentPath)
+              file.rwPath = pascalComponentPath
+            })
+          })
+        },
+      },
+      {
         title: 'Formatting source(s)...',
         enabled: (ctx) => ctx.newComponents.size > 0,
-        task: () => {
+        task: (ctx) => {
           // TODO: use ctx.newComponents to only lint newly added files
           // And/or use `git diff` to figure out what files needs to be linted
           // (just have to check that git is available and that git has been
@@ -285,12 +382,15 @@ export const handler = async ({ components, force }: CommandOptions) => {
             getPaths().web.config,
             'tailwind.config.js',
           )
-          const uiPath = path.join(getPaths().web.components, 'ui')
-          const hooksPath = path.join(getPaths().web.src, 'hooks')
+
+          const newComponentPaths = Array.from(ctx.newComponents.values())
+            .map((component) => component.files.map((file) => file.rwPath))
+            .flat()
+            .join(' ')
 
           try {
             execa.commandSync(
-              `yarn rw lint --fix ${uiPath} ${hooksPath} ${twConfigPath}`,
+              `yarn rw lint --fix ${newComponentPaths} ${twConfigPath}`,
               process.env['RWJS_CWD']
                 ? {
                     cwd: process.env['RWJS_CWD'],
@@ -304,78 +404,36 @@ export const handler = async ({ components, force }: CommandOptions) => {
         },
       },
       {
-        title: 'Renaming file(s)...',
-        enabled: (ctx) => ctx.newComponents.size > 0,
-        task: (ctx) => {
-          ctx.newComponents.forEach((component) => {
-            component.files.forEach(({ path: fileName }) => {
-              const ext = isTypeScriptProject()
-                ? fileName.endsWith('.tsx')
-                  ? '.tsx'
-                  : '.ts'
-                : fileName.endsWith('jsx')
-                  ? '.jsx'
-                  : '.js'
-
-              const componentPath = path.join(
-                getPaths().web.components,
-                fileName.replace(/.tsx?/, ext),
-              )
-              const pascalComponentPath = path.join(
-                getPaths().web.components,
-                fileNameToPascalCase(fileName, ext),
-              )
-
-              fs.renameSync(componentPath, pascalComponentPath)
-            })
-          })
-        },
-      },
-      {
         title: 'Updating import(s)...',
         enabled: (ctx) => ctx.newComponents.size > 0,
         task: (ctx) => {
           ctx.newComponents.forEach((component) => {
-            component.files.forEach(({ path: fileName }) => {
-              const ext = isTypeScriptProject()
-                ? fileName.endsWith('.tsx')
-                  ? '.tsx'
-                  : '.ts'
-                : fileName.endsWith('jsx')
-                  ? '.jsx'
-                  : '.js'
+            component.files.forEach((file) => {
+              if (!file.rwPath) {
+                throw new Error('No rwPath on file' + JSON.stringify(file))
+              }
 
-              const pascalComponentPath = path.join(
-                getPaths().web.components,
-                fileNameToPascalCase(fileName, ext),
-              )
+              const src = fs.readFileSync(file.rwPath, 'utf-8')
 
-              let src = fs.readFileSync(pascalComponentPath, 'utf-8')
+              const regExStr = `^import (.+) from '(src\/components\/.+)'$`
+              const regExStrMultiline = `^} from '(src\/components\/.+)'$`
 
-              ctx.newComponents.forEach((component) => {
-                component.files.forEach(({ path: fileName }) => {
-                  const importPath =
-                    'src/components/' + fileName.replace(/.tsx?/, '')
-                  const importPascalPath =
-                    'src/components/' + fileNameToPascalCase(fileName, '')
+              // Using replaceAll to also handle separate type imports
+              const updatedSrc = src
+                .replaceAll(
+                  new RegExp(regExStr, 'gm'),
+                  function (_match, p1, p2) {
+                    return `import ${p1} from '${fileNameToPascalCase(p2, '')}'`
+                  },
+                )
+                .replaceAll(
+                  new RegExp(regExStrMultiline, 'gm'),
+                  function (_match, p1) {
+                    return `} from '${fileNameToPascalCase(p1, '')}'`
+                  },
+                )
 
-                  const regExStr = `^import (.+) from '${importPath}'$`
-                  const regExStrMultiline = `^} from '${importPath}'$`
-
-                  // Using replaceAll to also handle separate type imports
-                  src = src
-                    .replaceAll(
-                      new RegExp(regExStr, 'gm'),
-                      `import $1 from '${importPascalPath}'`,
-                    )
-                    .replaceAll(
-                      new RegExp(regExStrMultiline, 'gm'),
-                      `} from '${importPascalPath}'`,
-                    )
-                })
-              })
-
-              fs.writeFileSync(pascalComponentPath, src)
+              fs.writeFileSync(file.rwPath, updatedSrc)
             })
           })
         },
@@ -481,4 +539,87 @@ function getPreExistingComponents(newComponents: Map<string, Component>) {
   })
 
   return existing
+}
+
+// This is copy/pasted from shad's implementation
+// https://github.com/shadcn-ui/ui/blob/500a353816969e3cce2b3f4f0699ce4e6ad06f0b/packages/shadcn/src/utils/registry/index.ts#L445
+function isUrl(path: string) {
+  try {
+    new URL(path)
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+// This is based on shad's implementation
+// https://github.com/shadcn-ui/ui/blob/500a353816969e3cce2b3f4f0699ce4e6ad06f0b/packages/shadcn/src/utils/registry/index.ts#L430
+function getRegistryUrl(component: string) {
+  if (isUrl(component)) {
+    // If the url contains /chat/b/, we assume it's the v0 registry.
+    // We need to add the /json suffix if it's missing.
+    const url = new URL(path)
+    if (url.pathname.match(/\/chat\/b\//) && !url.pathname.endsWith('/json')) {
+      url.pathname = `${url.pathname}/json`
+    }
+
+    return url.toString()
+  }
+
+  // TODO: Pass `config` as an argument to getRegistryUrl
+  return `${REGISTRY_URL}/styles/${config.style}/${component}.json`
+}
+
+function isComponent(json: unknown): json is Component {
+  return !!(
+    json &&
+    typeof json === 'object' &&
+    'name' in json &&
+    'files' in json &&
+    Array.isArray(json.files) &&
+    'type' in json
+  )
+}
+
+function getTargetDir(file: File) {
+  if (file.target) {
+    switch (file.type) {
+      case 'registry:ui':
+      case 'registry:block':
+      case 'registry:component':
+        return getPaths().web.components
+      case 'registry:lib':
+        return path.join(getPaths().web.src, 'utils')
+      case 'registry:hooks':
+        return path.join(getPaths().web.src, 'hooks')
+      case 'registry:page':
+        return path.join(getPaths().web.pages)
+      default:
+        throw new Error(`Unknown file type for: ${JSON.stringify(file)}`)
+    }
+  }
+
+  return getPaths().web.components
+}
+
+function getShadTargetDir(file: File) {
+  if (file.target) {
+    switch (file.type) {
+      case 'registry:ui':
+        return getPaths().web.components
+      case 'registry:block':
+      case 'registry:component':
+        return getPaths().web.components
+      case 'registry:lib':
+        return path.join(getPaths().web.src, 'utils')
+      case 'registry:hooks':
+        return path.join(getPaths().web.src, 'hooks')
+      case 'registry:page':
+        return getPaths().web.src
+      default:
+        throw new Error(`Unknown file type for: ${JSON.stringify(file)}`)
+    }
+  }
+
+  return getPaths().web.components
 }
