@@ -25,7 +25,7 @@ interface Component {
   name: string
   dependencies?: string[] | undefined
   registryDependencies?: string[] | undefined
-  files: string[]
+  files: Array<{ path: string; type: string }>
   type: string
 }
 
@@ -46,7 +46,20 @@ export const handler = async ({ components, force }: CommandOptions) => {
         title: 'Fetching registry...',
         task: async () => {
           if (shouldUpdateRegistryCache()) {
-            const res = await fetch('https://ui.shadcn.com/registry/index.json')
+            // TODO: /r/index.json
+            //       /r/colors/index.json
+            //       /r/colors/[baseColor].json
+            //       /r/styles/index.json
+            //       /r/styles/[style]/index.json
+            //       /r/styles/[style]/[name].json (/r/styles/default/use-mobile.json)
+            //       /r/themes.css
+            //       /r/themes/[theme].json (/r/themes/slate.json)
+            // Look in the shadcn-ui public/r/ folder for all files
+            // async function resolveDependencies(itemUrl: string) {
+            //   const url = getRegistryUrl(
+            //     isUrl(itemUrl) ? itemUrl : `styles/${config.style}/${itemUrl}.json`
+            //   )
+            const res = await fetch('https://ui.shadcn.com/r/index.json')
             const json: any = await res.json()
             // Just a basic sanity check here
             if (
@@ -139,6 +152,9 @@ export const handler = async ({ components, force }: CommandOptions) => {
             if (component) {
               ctx.newComponents.set(componentName, component)
               component.registryDependencies?.forEach((depName) => {
+                // TODO: This is a bit broken. Will not find all new components
+                // like hooks. It should look for styles/[style]/[name].json
+                // Shad has changed things up a bit
                 const dep = registry.find((c) => c.name === depName)
                 if (dep) {
                   ctx.newComponents.set(depName, dep)
@@ -151,6 +167,12 @@ export const handler = async ({ components, force }: CommandOptions) => {
             }
           })
 
+          // TODO: Not everything in `newComponents` are really "components".
+          // Some are for example hooks, so `getPreExistingComponents` won't
+          // find them. Need to figure out if I should update the function to
+          // handle this, or if I should add a separate function for hooks etc.
+          // (currenly hooks aren't actually supported, but that's a separate
+          // TODO. See above)
           const existingComponents = getPreExistingComponents(ctx.newComponents)
 
           if (!force) {
@@ -178,7 +200,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
 
           const args = [
             '--yes',
-            'https://verdaccio.tobbe.dev/shadcn/-/shadcn-2.1.2-tobbe-20241029-0244.tgz',
+            'https://verdaccio.tobbe.dev/shadcn/-/shadcn-2.1.2-tobbe-20241101-0945.tgz',
             'add',
             '--cwd',
             // shadcn will look for a package.json in this directory
@@ -186,7 +208,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
             '--config-dir',
             // This is where shadcn should look for components.json
             path.relative(getPaths().web.base, getPaths().web.config),
-            force && '--overwrite',
+            force ? '--overwrite' : '--no-overwrite',
             ...ctx.newComponents.keys(),
           ].filter((n?: string | false): n is string => Boolean(n))
 
@@ -221,6 +243,10 @@ export const handler = async ({ components, force }: CommandOptions) => {
 
           process.addListener('exit', exitListener)
 
+          // TODO: This can take a while if there are many components to add.
+          // There is a spinner, but the user might still think that it'll just
+          // sit there and spin forever. We should have some kind of better
+          // feedback to the user.
           await npxProcess
 
           process.removeListener('exit', exitListener)
@@ -249,11 +275,22 @@ export const handler = async ({ components, force }: CommandOptions) => {
         enabled: (ctx) => ctx.newComponents.size > 0,
         task: () => {
           // TODO: use ctx.newComponents to only lint newly added files
+          // And/or use `git diff` to figure out what files needs to be linted
+          // (just have to check that git is available and that git has been
+          // initialized in the project first)
+
+          // TODO: Change "import * as React ..." to "import React ..."
+
+          const twConfigPath = path.join(
+            getPaths().web.config,
+            'tailwind.config.js',
+          )
+          const uiPath = path.join(getPaths().web.components, 'ui')
+          const hooksPath = path.join(getPaths().web.src, 'hooks')
 
           try {
             execa.commandSync(
-              'yarn rw lint --fix ' +
-                path.join(getPaths().web.components, 'ui'),
+              `yarn rw lint --fix ${uiPath} ${hooksPath} ${twConfigPath}`,
               process.env['RWJS_CWD']
                 ? {
                     cwd: process.env['RWJS_CWD'],
@@ -271,7 +308,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
         enabled: (ctx) => ctx.newComponents.size > 0,
         task: (ctx) => {
           ctx.newComponents.forEach((component) => {
-            component.files.forEach((fileName) => {
+            component.files.forEach(({ path: fileName }) => {
               const ext = isTypeScriptProject()
                 ? fileName.endsWith('.tsx')
                   ? '.tsx'
@@ -299,7 +336,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
         enabled: (ctx) => ctx.newComponents.size > 0,
         task: (ctx) => {
           ctx.newComponents.forEach((component) => {
-            component.files.forEach((fileName) => {
+            component.files.forEach(({ path: fileName }) => {
               const ext = isTypeScriptProject()
                 ? fileName.endsWith('.tsx')
                   ? '.tsx'
@@ -316,7 +353,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
               let src = fs.readFileSync(pascalComponentPath, 'utf-8')
 
               ctx.newComponents.forEach((component) => {
-                component.files.forEach((fileName) => {
+                component.files.forEach(({ path: fileName }) => {
                   const importPath =
                     'src/components/' + fileName.replace(/.tsx?/, '')
                   const importPascalPath =
@@ -419,11 +456,13 @@ function shouldUpdateRegistryCache() {
 
 function getPreExistingComponents(newComponents: Map<string, Component>) {
   const existing = Array.from(newComponents.values()).filter((component) => {
-    const firstFileName = component.files[0]
+    const firstFile = component.files[0]
 
-    if (!firstFileName) {
+    if (!firstFile || !firstFile.path) {
       return false
     }
+
+    const firstFileName = firstFile.path
 
     const ext = isTypeScriptProject()
       ? firstFileName.endsWith('.tsx')
