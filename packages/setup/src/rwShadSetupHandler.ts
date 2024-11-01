@@ -272,7 +272,7 @@ export const handler = async ({ force }: { force: boolean }) => {
           writeFile(twConfigPath, twConfigStr, { existingFiles: 'OVERWRITE' })
 
           await execa.command(
-            'yarn rw lint --fix web/config/tailwind.config.js',
+            'yarn rw lint --fix ' + twConfigPath,
             process.env['RWJS_CWD']
               ? {
                   cwd: process.env['RWJS_CWD'],
