@@ -477,7 +477,7 @@ function titleCase(str: string) {
 
 function fileNameToPascalCase(fileName: string, ext: string) {
   const parts = fileName.split('/')
-  const componentFileName = parts.at(-1)?.replace(/.tsx?/, '')
+  const componentFileName = parts.at(-1)?.replace(/\.tsx?/, '')
   return path.join(...parts.slice(0, -1), pascalcase(componentFileName) + ext)
 }
 
