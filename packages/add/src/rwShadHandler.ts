@@ -31,10 +31,15 @@ interface File {
 
 interface Component {
   name: string
+  type: string
   dependencies?: string[] | undefined
+  devDependencies?: string[] | undefined
   registryDependencies?: string[] | undefined
   files: File[]
-  type: string
+  tailwind?: Record<string, string>
+  cssVars?: Record<string, string>
+  meta?: Record<'importSpecifier' | 'moduleSpecifier' | (string & {}), string>
+  docs?: string
 }
 
 type Registry = Array<Component>
@@ -54,7 +59,9 @@ export const handler = async ({ components, force }: CommandOptions) => {
   // shadcn/ui uses kebab-case for component names
   let componentNames =
     components?.map((component) =>
-      component.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),
+      isUrl(component)
+        ? component
+        : component.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),
     ) ?? []
 
   const tasks = new Listr(
@@ -184,18 +191,16 @@ export const handler = async ({ components, force }: CommandOptions) => {
 
                   if (!res.ok) {
                     throw new Error(
-                      `!res.ok. Component "${componentName}" not found in registry`,
+                      `!res.ok. ${res.status} Component "${componentName}" not found in registry`,
                     )
                   }
 
-                  const json: any = await res.json()
+                  const component: unknown = await res.json()
 
-                  if (isComponent(json)) {
-                    const component = json as Component
+                  if (isComponent(component)) {
+                    registryR.push(component)
 
-                    registryR.push(json)
-
-                    ctx.newComponents.set(componentName, json)
+                    ctx.newComponents.set(componentName, component)
                     component.registryDependencies?.forEach((depName) => {
                       // TODO: This is a bit broken. Will not find all new components
                       // like hooks. It should look for styles/[style]/[name].json
@@ -357,7 +362,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
                 (file.target || fileName).replace(/\.tsx?/, ext),
               )
               const pascalComponentPath = path.join(
-                getTargetDir(file),
+                getTargetDir(file, component),
                 fileNameToPascalCase(fileName, ext),
               )
 
@@ -558,7 +563,7 @@ function getRegistryUrl(component: string) {
   if (isUrl(component)) {
     // If the url contains /chat/b/, we assume it's the v0 registry.
     // We need to add the /json suffix if it's missing.
-    const url = new URL(path)
+    const url = new URL(component)
     if (url.pathname.match(/\/chat\/b\//) && !url.pathname.endsWith('/json')) {
       url.pathname = `${url.pathname}/json`
     }
@@ -581,25 +586,25 @@ function isComponent(json: unknown): json is Component {
   )
 }
 
-function getTargetDir(file: File) {
-  if (file.target) {
-    switch (file.type) {
-      case 'registry:ui':
-      case 'registry:block':
-      case 'registry:component':
-        return getPaths().web.components
-      case 'registry:lib':
-        return path.join(getPaths().web.src, 'utils')
-      case 'registry:hooks':
-        return path.join(getPaths().web.src, 'hooks')
-      case 'registry:page':
-        return path.join(getPaths().web.pages)
-      default:
-        throw new Error(`Unknown file type for: ${JSON.stringify(file)}`)
-    }
+function getTargetDir(file: File, component: Component) {
+  if (component.meta?.importSpecifier === 'Page') {
+    return getPaths().web.pages
   }
 
-  return getPaths().web.components
+  switch (file.type) {
+    case 'registry:ui':
+    case 'registry:block':
+    case 'registry:component':
+      return getPaths().web.components
+    case 'registry:lib':
+      return path.join(getPaths().web.src, 'utils')
+    case 'registry:hooks':
+      return path.join(getPaths().web.src, 'hooks')
+    case 'registry:page':
+      return getPaths().web.pages
+    default:
+      throw new Error(`Unknown file type for: ${JSON.stringify(file)}`)
+  }
 }
 
 function getShadTargetDir(file: File) {
