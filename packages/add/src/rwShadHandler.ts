@@ -260,7 +260,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
 
           const args = [
             '--yes',
-            'https://verdaccio.tobbe.dev/shadcn/-/shadcn-2.1.2-tobbe-20241101-0945.tgz',
+            'https://verdaccio.tobbe.dev/shadcn/-/shadcn-2.1.2-tobbe-20241102-0943.tgz',
             'add',
             '--cwd',
             // shadcn will look for a package.json in this directory
