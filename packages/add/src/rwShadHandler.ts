@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import execa from 'execa'
 import { Listr } from 'listr2'
@@ -29,6 +29,9 @@ interface File {
   rwPath?: string
 }
 
+// Shad has two different types for this. I don't know which one to use when
+// https://github.com/shadcn-ui/ui/blob/e24e51a2fa951eccbcada573056df86f4029f55f/packages/shadcn/src/utils/registry/schema.ts#L38
+// https://github.com/shadcn-ui/ui/blob/e24e51a2fa951eccbcada573056df86f4029f55f/apps/www/registry/schema.ts#L51
 interface Component {
   name: string
   type: string
@@ -40,6 +43,8 @@ interface Component {
   cssVars?: Record<string, string>
   meta?: Record<'importSpecifier' | 'moduleSpecifier' | (string & {}), string>
   docs?: string
+  category?: string
+  subcategory?: string
 }
 
 type Registry = Array<Component>
@@ -336,12 +341,22 @@ export const handler = async ({ components, force }: CommandOptions) => {
         task: (ctx) => {
           ctx.newComponents.forEach((component) => {
             component.files.forEach((file) => {
-              const fileName =
-                file.type === 'registry:ui'
-                  ? file.path
-                  : (file.target || file.path)
-                      ?.split('/')
-                      ?.at(file.type === 'registry:page' ? -2 : -1)
+              let fileName = (file.target || file.path)?.split('/')?.at(-1)
+
+              if (component.category === 'generators') {
+                // Do nothing
+                //
+                // TODO: Right now I've only tested with pages. Need to test
+                // with other templates as well, like css files
+              } else if (file.type === 'registry:ui') {
+                fileName = file.path
+              } else if (file.type === 'registry:page') {
+                fileName = (file.target || file.path)?.split('/')?.at(-2)
+
+                if (!fileName?.toLowerCase()?.endsWith('page')) {
+                  fileName += '-page'
+                }
+              }
 
               if (!fileName) {
                 throw new Error(
@@ -350,7 +365,8 @@ export const handler = async ({ components, force }: CommandOptions) => {
               }
 
               const ext = isTypeScriptProject()
-                ? (file.target || file.path).endsWith('.tsx')
+                ? (file.target || file.path).endsWith('.tsx') ||
+                  (file.target || file.path).endsWith('.tsx.template')
                   ? '.tsx'
                   : '.ts'
                 : (file.target || file.path).endsWith('jsx')
@@ -361,13 +377,16 @@ export const handler = async ({ components, force }: CommandOptions) => {
                 getShadTargetDir(file),
                 (file.target || fileName).replace(/\.tsx?/, ext),
               )
-              const pascalComponentPath = path.join(
+              const destPath = path.join(
                 getTargetDir(file, component),
-                fileNameToPascalCase(fileName, ext),
+                component.category === 'generators'
+                  ? fileName
+                  : fileNameToPascalCase(fileName, ext),
               )
 
-              fs.renameSync(componentPath, pascalComponentPath)
-              file.rwPath = pascalComponentPath
+              fs.mkdirSync(path.dirname(destPath), { recursive: true })
+              fs.renameSync(componentPath, destPath)
+              file.rwPath = destPath
             })
           })
         },
@@ -591,6 +610,13 @@ function getTargetDir(file: File, component: Component) {
     return getPaths().web.pages
   }
 
+  if (component.category === 'generators') {
+    return path.join(
+      getPaths().web.generators,
+      ...file.path.split('/').slice(0, -1),
+    )
+  }
+
   switch (file.type) {
     case 'registry:ui':
     case 'registry:block':
@@ -611,7 +637,6 @@ function getShadTargetDir(file: File) {
   if (file.target) {
     switch (file.type) {
       case 'registry:ui':
-        return getPaths().web.components
       case 'registry:block':
       case 'registry:component':
         return getPaths().web.components
