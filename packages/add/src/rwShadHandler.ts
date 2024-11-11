@@ -50,6 +50,8 @@ interface Component {
 type Registry = Array<Component>
 
 const REGISTRY_URL = process.env['REGISTRY_URL'] ?? 'https://ui.shadcn.com/r'
+const RW_REGISTRY_URL =
+  process.env['RW_REGISTRY_URL'] ?? 'https://redwoodjs.github.io/rw-shad/r'
 
 // TODO: Read from components.json
 // path.join(getPaths().web.config, 'components.json')
@@ -60,7 +62,11 @@ const config = {
 let registry: Registry = []
 let registryR: Registry = []
 
-export const handler = async ({ components, force }: CommandOptions) => {
+export const handler = async ({
+  components,
+  force,
+  _: positionals,
+}: CommandOptions) => {
   // shadcn/ui uses kebab-case for component names
   let componentNames =
     components?.map((component) =>
@@ -130,12 +136,21 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Component selection...',
         task: async (_ctx, task) => {
+          const choices = positionals.includes('rw')
+            ? ['label', 'login-template', 'signup-template'].map((name) => ({
+                message: titleCase(name),
+                name,
+              }))
+            : registry.map((component) => ({
+                message: titleCase(component.name),
+                name: component.name,
+              }))
           const prompt = task.prompt(ListrEnquirerPromptAdapter)
           const components = await prompt.run({
             type: 'multiselect',
-            message: `Select the components you want to add (Press ${colors.green(
-              '<space>',
-            )} to select)`,
+            message:
+              'Select the components you want to add ' +
+              `(Press ${colors.green('<space>')} to select)`,
             footer: '\nEnter to confirm your choices and continue',
             name: 'name',
             required: true,
@@ -152,10 +167,7 @@ export const handler = async ({ components, force }: CommandOptions) => {
               // The default ✓ indicator has bad accessibility
               return ` ${choice.enabled ? '●' : '○'}`
             },
-            choices: registry.map((component) => ({
-              message: titleCase(component.name),
-              name: component.name,
-            })),
+            choices,
 
             validate: (value) => {
               if (value.length < 1) {
@@ -175,11 +187,13 @@ export const handler = async ({ components, force }: CommandOptions) => {
       {
         title: 'Adding component(s)...',
         task: async (ctx, task) => {
+          const isRwComponent = positionals.includes('rw')
+
           await Promise.all(
             componentNames.map(async (componentName) => {
               const component = registry.find((c) => c.name === componentName)
 
-              if (component) {
+              if (!isRwComponent && component) {
                 ctx.newComponents.set(componentName, component)
                 component.registryDependencies?.forEach((depName) => {
                   // TODO: This is a bit broken. Will not find all new components
@@ -192,7 +206,12 @@ export const handler = async ({ components, force }: CommandOptions) => {
                 })
               } else {
                 try {
-                  const res = await fetch(getRegistryUrl(componentName))
+                  const res = await fetch(
+                    getRegistryUrl({
+                      component: componentName,
+                      isRwComponent,
+                    }),
+                  )
 
                   if (!res.ok) {
                     throw new Error(
@@ -274,7 +293,9 @@ export const handler = async ({ components, force }: CommandOptions) => {
             // This is where shadcn should look for components.json
             path.relative(getPaths().web.base, getPaths().web.config),
             force ? '--overwrite' : '--no-overwrite',
-            ...ctx.newComponents.keys(),
+            ...[...ctx.newComponents.keys()].map((name) =>
+              isRwComponent ? getRwUrl(name) : name,
+            ),
           ].filter((n?: string | false): n is string => Boolean(n))
 
           const options: Writeable<execa.Options> = { stdio: 'pipe' }
@@ -578,11 +599,17 @@ function isUrl(path: string) {
 
 // This is based on shad's implementation
 // https://github.com/shadcn-ui/ui/blob/500a353816969e3cce2b3f4f0699ce4e6ad06f0b/packages/shadcn/src/utils/registry/index.ts#L430
-function getRegistryUrl(component: string) {
-  if (isUrl(component)) {
+function getRegistryUrl({
+  component,
+  isRwComponent,
+}: {
+  component: string
+  isRwComponent: boolean
+}) {
+  if (isRwComponent || isUrl(component)) {
     // If the url contains /chat/b/, we assume it's the v0 registry.
     // We need to add the /json suffix if it's missing.
-    const url = new URL(component)
+    const url = new URL(isRwComponent ? getRwUrl(component) : component)
     if (url.pathname.match(/\/chat\/b\//) && !url.pathname.endsWith('/json')) {
       url.pathname = `${url.pathname}/json`
     }
@@ -592,6 +619,10 @@ function getRegistryUrl(component: string) {
 
   // TODO: Pass `config` as an argument to getRegistryUrl
   return `${REGISTRY_URL}/styles/${config.style}/${component}.json`
+}
+
+function getRwUrl(name: string) {
+  return `${RW_REGISTRY_URL}/${name}.json`
 }
 
 function isComponent(json: unknown): json is Component {

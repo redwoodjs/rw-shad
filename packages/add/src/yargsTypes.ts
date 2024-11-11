@@ -1,4 +1,5 @@
 export interface BaseOptions {
+  _: string[]
   cwd: string | undefined
 }
 

@@ -53,5 +53,11 @@ yargs(hideBin(process.argv))
     demandOption: false,
     description: 'Working directory to use (where `redwood.toml` is located)',
   })
+  .command(
+    'rw [components..]',
+    'Generate one or more RW components',
+    builder,
+    handler,
+  )
   .command(command, description, builder, handler)
   .parse()
