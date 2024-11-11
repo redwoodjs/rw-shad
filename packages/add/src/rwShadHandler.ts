@@ -224,7 +224,10 @@ export const handler = async ({
                   if (isComponent(component)) {
                     registryR.push(component)
 
-                    ctx.newComponents.set(componentName, component)
+                    ctx.newComponents.set(
+                      isRwComponent ? getRwUrl(componentName) : componentName,
+                      component,
+                    )
                     component.registryDependencies?.forEach((depName) => {
                       // TODO: This is a bit broken. Will not find all new components
                       // like hooks. It should look for styles/[style]/[name].json
@@ -293,9 +296,7 @@ export const handler = async ({
             // This is where shadcn should look for components.json
             path.relative(getPaths().web.base, getPaths().web.config),
             force ? '--overwrite' : '--no-overwrite',
-            ...[...ctx.newComponents.keys()].map((name) =>
-              isRwComponent ? getRwUrl(name) : name,
-            ),
+            ...ctx.newComponents.keys(),
           ].filter((n?: string | false): n is string => Boolean(n))
 
           const options: Writeable<execa.Options> = { stdio: 'pipe' }
